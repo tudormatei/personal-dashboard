@@ -62,14 +62,10 @@ const generateCalendarRange = (
   const dayOfWeek = current.getDay();
   const offset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
 
-  const c = new Date(firstDate);
-  c.setDate(c.getDate() - offset);
   for (let i = 0; i < offset; i++) {
     calendar.push({
-      date: new Date(c),
       isPlaceholder: true,
     });
-    c.setDate(c.getDate() + 1);
   }
 
   while (current <= lastDate) {
@@ -171,8 +167,12 @@ const Workouts = () => {
                   <CalendarGrid>
                     {calendar.map((d, i) =>
                       d.isPlaceholder ? (
-                        <CalendarDay key={i} hasWorkout={false}>
-                          {d.date!.getDate()}
+                        <CalendarDay
+                          key={i}
+                          hasWorkout={false}
+                          style={{ visibility: "hidden" }}
+                        >
+                          &nbsp;
                         </CalendarDay>
                       ) : (
                         <CalendarDay
