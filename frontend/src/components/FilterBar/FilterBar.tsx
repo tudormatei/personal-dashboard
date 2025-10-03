@@ -18,7 +18,8 @@ const FilterBar = ({ onFilter, defaultRange = 30 }: FilterBarProps) => {
 
   useEffect(() => {
     onFilter(startDate, endDate);
-  }, [startDate, endDate, onFilter]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const applyFilter = () => {
     onFilter(startDate, endDate);
