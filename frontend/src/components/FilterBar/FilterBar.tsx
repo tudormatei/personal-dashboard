@@ -5,9 +5,14 @@ import Button from "../../components/Button/Button";
 interface FilterBarProps {
   onFilter: (startDate: string, endDate: string) => void;
   defaultRange?: number;
+  runOnMount?: boolean;
 }
 
-const FilterBar = ({ onFilter, defaultRange = 30 }: FilterBarProps) => {
+const FilterBar = ({
+  onFilter,
+  defaultRange = 30,
+  runOnMount = true,
+}: FilterBarProps) => {
   const today = new Date();
   const formatDate = (d: Date) => d.toISOString().split("T")[0];
 
@@ -17,7 +22,7 @@ const FilterBar = ({ onFilter, defaultRange = 30 }: FilterBarProps) => {
   const [endDate, setEndDate] = useState<string>(formatDate(today));
 
   useEffect(() => {
-    onFilter(startDate, endDate);
+    if (runOnMount) onFilter(startDate, endDate);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -62,6 +67,9 @@ const FilterBar = ({ onFilter, defaultRange = 30 }: FilterBarProps) => {
         </Button>
         <Button variant="secondary" onClick={() => quickSet(365)}>
           1Y
+        </Button>
+        <Button variant="secondary" onClick={() => quickSet(20 * 365)}>
+          All
         </Button>
       </QuickButtons>
     </FiltersWrapper>

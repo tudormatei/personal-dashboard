@@ -5,12 +5,12 @@ import {
   UploadBox,
   FileInput,
   HelperText,
-} from "./Home.styled";
+} from "./Upload.styled";
 import Loader from "../../components/Loader/Loader";
 import Alert from "../../components/Alert/Alert";
 import Button from "../../components/Button/Button";
 
-const Home = (): JSX.Element => {
+const Upload = (): JSX.Element => {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState<{
@@ -79,4 +79,4 @@ const Home = (): JSX.Element => {
   );
 };
 
-export default Home;
+export default Upload;

@@ -6,10 +6,13 @@ import {
   SidebarItem,
   ContentArea,
   Logo,
+  Separator,
 } from "./AppLayout.styled";
-import { FaHome, FaAppleAlt } from "react-icons/fa";
+import { FaAppleAlt } from "react-icons/fa";
 import { GiWeight } from "react-icons/gi";
 import { LuDumbbell } from "react-icons/lu";
+import { FaMoneyBillTrendUp } from "react-icons/fa6";
+import { IoMdCloudUpload } from "react-icons/io";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -22,8 +25,8 @@ const AppLayout: FC<AppLayoutProps> = ({ children }) => {
     <LayoutContainer>
       <Sidebar>
         <Logo>D</Logo>
-        <SidebarItem to="/" active={pathname === "/"}>
-          <FaHome size={22} />
+        <SidebarItem to="/upload" active={pathname === "/upload"}>
+          <IoMdCloudUpload size={22} />
         </SidebarItem>
         <SidebarItem to="/weight" active={pathname === "/weight"}>
           <GiWeight size={22} />
@@ -33,6 +36,10 @@ const AppLayout: FC<AppLayoutProps> = ({ children }) => {
         </SidebarItem>
         <SidebarItem to="/workouts" active={pathname === "/workouts"}>
           <LuDumbbell size={22} />
+        </SidebarItem>
+        <Separator />
+        <SidebarItem to="/investments" active={pathname === "/investments"}>
+          <FaMoneyBillTrendUp size={22} />
         </SidebarItem>
       </Sidebar>
 

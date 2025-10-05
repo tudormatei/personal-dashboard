@@ -8,10 +8,11 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Legend,
 } from "recharts";
 import Card from "../../components/Card/Card";
 import FilterBar from "../../components/FilterBar/FilterBar";
-import { colors } from "../../constants/styling";
+import { colors, radii, spacing } from "../../constants/styling";
 import type { MaintenanceData, WeightRecord } from "../../types/types";
 import Loader from "../../components/Loader/Loader";
 import Alert from "../../components/Alert/Alert";
@@ -29,10 +30,15 @@ const Weight = (): JSX.Element => {
     setError(null);
 
     try {
-      const url = `/api/weight?start_date=${startDate}&end_date=${endDate}`;
+      const params = new URLSearchParams({
+        start_date: startDate,
+        end_date: endDate,
+      });
+
+      const url = `/api/weight?${params.toString()}`;
       const res = await fetch(url);
       const maintenanceRes = await fetch(
-        `/api/maintenance?start_date=${startDate}&end_date=${endDate}`
+        `/api/maintenance?${params.toString()}`
       );
 
       const json: WeightRecord[] = await res.json();
@@ -95,6 +101,8 @@ const Weight = (): JSX.Element => {
                 contentStyle={{
                   backgroundColor: colors.charts.tooltipBg,
                   border: `1px solid ${colors.charts.tooltipBg}`,
+                  borderRadius: radii.md,
+                  padding: spacing.sm,
                   color: colors.charts.tooltipText,
                 }}
                 labelFormatter={(d) => new Date(d).toLocaleDateString()}
@@ -135,6 +143,7 @@ const Weight = (): JSX.Element => {
                 name="90d MA"
                 hide={!weightData.some((d) => d.ma90 !== null)}
               />
+              <Legend />
             </LineChart>
           </ResponsiveContainer>
         </>
@@ -144,16 +153,16 @@ const Weight = (): JSX.Element => {
         <>
           <DashboardGrid>
             <Card
-              title="Actual Start Weight"
+              title="Actual Start Weight (kg)"
               value={maintenanceData.pred_start_weight}
             />
             <Card
-              title="Actual End Weight"
+              title="Actual End Weight (kg)"
               value={maintenanceData.pred_end_weight}
             />
 
             <Card
-              title="Total Weight Change"
+              title="Total Weight Change (kg)"
               value={maintenanceData.total_weight_change}
             />
           </DashboardGrid>

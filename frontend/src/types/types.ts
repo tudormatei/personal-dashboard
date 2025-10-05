@@ -61,3 +61,70 @@ export interface WorkoutStat {
   sessions_per_month: Record<string, number>;
   longest_streak_days: number;
 }
+
+export interface AccountInfo {
+  currency: string | null;
+  type: string | null;
+  id: string | null;
+}
+
+export interface CashReportItem {
+  starting: number;
+  deposits: number;
+  withdrawals: number;
+  ending: number;
+}
+
+export interface StatementFund {
+  amount: number;
+  date: string;
+}
+
+export interface OpenPosition {
+  currency: string;
+  symbol: string;
+  description: string;
+  position: number;
+  markPrice: number;
+  positionValue: number;
+  costBasisPrice: number;
+  costBasisMoney: number;
+  percentOfNAV: number;
+  fxRateToBase: number;
+}
+
+export interface Trade {
+  date: string;
+  quantity: number;
+  tradePrice: number;
+  ibCommission: number;
+  buySell: string;
+  netCash: number;
+  symbol: string;
+}
+
+export interface CashTransaction {
+  date: string;
+  amount: number;
+  type: string;
+  fxRateToBase: number;
+}
+
+export interface ValueOverTime {
+  date: string;
+  cash: number;
+  total: number;
+}
+
+export interface InvestmentsData {
+  reports: number;
+  fromDate?: string;
+  toDate?: string;
+  account: AccountInfo;
+  cashReport: CashReportItem[];
+  statementFunds: StatementFund[];
+  openPositions: OpenPosition[];
+  valueOverTime: ValueOverTime[];
+  trades: Trade[];
+  cashTransactions: CashTransaction[];
+}

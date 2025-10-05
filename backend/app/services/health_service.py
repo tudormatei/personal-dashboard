@@ -111,7 +111,7 @@ def get_weight_stats(
         df_daily['to_target'] = target_weight - df_daily['value']
 
     numeric_cols = df_daily.select_dtypes(include=[np.number]).columns
-    df_daily[numeric_cols] = df_daily[numeric_cols].applymap(
+    df_daily[numeric_cols] = df_daily[numeric_cols].map(
         lambda x: None if pd.isna(x) or np.isinf(x) or abs(x) > 1e308 else x
     )
     df_daily[numeric_cols] = df_daily[numeric_cols].round(1)
@@ -194,7 +194,7 @@ def compute_nutrient_stats(
             df_daily['value']
 
     numeric_cols = df_daily.select_dtypes(include=[np.number]).columns
-    df_daily[numeric_cols] = df_daily[numeric_cols].applymap(
+    df_daily[numeric_cols] = df_daily[numeric_cols].map(
         lambda x: None if pd.isna(x) or np.isinf(x) or abs(x) > 1e308 else x
     )
 

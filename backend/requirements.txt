@@ -6,3 +6,6 @@ pandas
 matplotlib
 python-multipart
 scikit-learn
+requests
+aiohttp
+xmltodict

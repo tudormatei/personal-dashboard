@@ -24,6 +24,23 @@ export const colors = {
     ma30: "#9c27b0",
     ma90: "#795548",
 
+    profit: "#82ca9d",
+    loss: "#ff6961",
+
+    pie: [
+      "#00bcd4",
+      "#4caf50",
+      "#2196f3",
+      "#ff5252",
+      "#ffca28",
+      "#ff8c00",
+      "#9c27b0",
+      "#795548",
+    ],
+
+    primary: "#ff8c00",
+    secondary: "#4caf50",
+
     grid: "#2a2a2a",
     axis: "#aaaaaa",
     tooltipBg: "#111111",

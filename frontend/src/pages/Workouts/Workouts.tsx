@@ -14,7 +14,7 @@ import {
   MonthLabel,
   WeekdayHeader,
 } from "./Workouts.styled";
-import { colors, spacing } from "../../constants/styling";
+import { colors, radii, spacing } from "../../constants/styling";
 import {
   BarChart,
   Bar,
@@ -91,7 +91,11 @@ const Workouts = () => {
     setError(null);
 
     try {
-      const url = `/api/workouts?start_date=${startDate}&end_date=${endDate}`;
+      const params = new URLSearchParams({
+        start_date: startDate,
+        end_date: endDate,
+      });
+      const url = `/api/workouts?${params.toString()}`;
       const res = await fetch(url);
       const json: WorkoutStat = await res.json();
       setData(json);
@@ -118,7 +122,7 @@ const Workouts = () => {
 
       <FilterBar onFilter={fetchData} />
 
-      {loading && <Loader text="Loading weight data..." />}
+      {loading && <Loader text="Loading workouts data..." />}
 
       {error && <Alert text={error} type="error" />}
 
@@ -208,7 +212,9 @@ const Workouts = () => {
               <Tooltip
                 contentStyle={{
                   backgroundColor: colors.charts.tooltipBg,
-                  border: `1px solid ${colors.charts.grid}`,
+                  border: `1px solid ${colors.charts.tooltipBg}`,
+                  borderRadius: radii.md,
+                  padding: spacing.sm,
                   color: colors.charts.tooltipText,
                 }}
               />
@@ -236,7 +242,9 @@ const Workouts = () => {
                   <Tooltip
                     contentStyle={{
                       backgroundColor: colors.charts.tooltipBg,
-                      border: `1px solid ${colors.charts.grid}`,
+                      border: `1px solid ${colors.charts.tooltipBg}`,
+                      borderRadius: radii.md,
+                      padding: spacing.sm,
                       color: colors.charts.tooltipText,
                     }}
                   />
@@ -269,7 +277,9 @@ const Workouts = () => {
                   <Tooltip
                     contentStyle={{
                       backgroundColor: colors.charts.tooltipBg,
-                      border: `1px solid ${colors.charts.grid}`,
+                      border: `1px solid ${colors.charts.tooltipBg}`,
+                      borderRadius: radii.md,
+                      padding: spacing.sm,
                       color: colors.charts.tooltipText,
                     }}
                   />

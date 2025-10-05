@@ -1,3 +1,4 @@
+# Apple Health
 RELEVANT_RECORD_TYPES = {
     "HKQuantityTypeIdentifierBodyMass",
 
@@ -21,7 +22,12 @@ MACRO_TYPES = {
 }
 
 AVERAGE_LIFTING_CALORIES = 400
-
 LIFTING_SESSIONS_PER_WEEK = 5
-
 AVERAGE_DAYS_PER_MONTH = 30.436875
+
+
+# IBKR Flex Queries
+BASE_URL = "https://ndcdyn.interactivebrokers.com/AccountManagement/FlexWebService"
+FLEX_VERSION = 3
+ACCOUNT_INCEPTION = "2024-09-01"
+DATE_FMT = "%Y-%m-%d"

@@ -23,7 +23,15 @@ export const Sidebar = styled.nav`
   gap: ${spacing.lg};
 `;
 
+export const Separator = styled.div`
+  height: 1px;
+  width: 50%;
+  background-color: ${colors.charts.grid};
+  margin: 0;
+`;
+
 export const Logo = styled.div`
+  margin-top: ${spacing.sm};
   font-size: 1.25rem;
   font-weight: ${typography.fontWeight.bold};
   color: ${colors.accent};

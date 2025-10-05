@@ -39,6 +39,7 @@ export const MonthContainer = styled.div`
   min-width: 280px;
   display: flex;
   flex-direction: column;
+  margin-bottom: ${spacing.md};
 `;
 
 export const MonthLabel = styled.h3`

@@ -11,7 +11,7 @@ import {
 } from "recharts";
 import Card from "../../components/Card/Card";
 import FilterBar from "../../components/FilterBar/FilterBar";
-import { colors, spacing } from "../../constants/styling";
+import { colors, radii, spacing } from "../../constants/styling";
 import type { MacrosData, NutrientRecord } from "../../types/types";
 import Loader from "../../components/Loader/Loader";
 import Alert from "../../components/Alert/Alert";
@@ -35,9 +35,11 @@ const Macros = (): JSX.Element => {
     setError(null);
 
     try {
-      const macrosRes = await fetch(
-        `/api/macros?start_date=${startDate}&end_date=${endDate}`
-      );
+      const params = new URLSearchParams({
+        start_date: startDate,
+        end_date: endDate,
+      });
+      const macrosRes = await fetch(`/api/macros?${params.toString()}`);
       const macrosJson: MacrosData = await macrosRes.json();
       setMacrosData(macrosJson);
     } catch {
@@ -54,7 +56,7 @@ const Macros = (): JSX.Element => {
 
       <FilterBar onFilter={fetchData} />
 
-      {loading && <Loader text="Loading weight data..." />}
+      {loading && <Loader text="Loading macros data..." />}
 
       {error && <Alert text={error} type="error" />}
 
@@ -99,6 +101,8 @@ const Macros = (): JSX.Element => {
                     contentStyle={{
                       backgroundColor: colors.charts.tooltipBg,
                       border: `1px solid ${colors.charts.tooltipBg}`,
+                      borderRadius: radii.md,
+                      padding: spacing.sm,
                       color: colors.charts.tooltipText,
                     }}
                     labelFormatter={(d) => new Date(d).toLocaleDateString()}
@@ -107,7 +111,9 @@ const Macros = (): JSX.Element => {
                     type="monotone"
                     dataKey="value"
                     stroke={
-                      colors.charts[nutrient.key as keyof typeof colors.charts]
+                      colors.charts[
+                        nutrient.key as keyof typeof colors.charts
+                      ] as string
                     }
                     strokeWidth={2}
                     dot={{ r: 3 }}
@@ -126,7 +132,11 @@ const Macros = (): JSX.Element => {
                         key={ma}
                         type="monotone"
                         dataKey={ma}
-                        stroke={colors.charts[ma as keyof typeof colors.charts]}
+                        stroke={
+                          colors.charts[
+                            ma as keyof typeof colors.charts
+                          ] as string
+                        }
                         strokeWidth={1.5}
                         dot={false}
                         name={`${nutrient.label} ${ma.replace("ma", "")}d MA`}
