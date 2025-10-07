@@ -29,7 +29,11 @@ import {
 } from "recharts";
 import type { InvestmentsData } from "../../types/types";
 import { colors, radii, spacing } from "../../constants/styling";
-import { formatDate, formatNumber } from "../../utils/utils";
+import {
+  formatDate,
+  formatDateReadable,
+  formatNumber,
+} from "../../utils/utils";
 
 type Fund = {
   date: string;
@@ -149,7 +153,6 @@ const Investments = (): JSX.Element => {
             </InfoContainer>
 
             <InfoContainer width="35%">
-              <h2>Portfolio Allocation (%)</h2>
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
@@ -206,9 +209,9 @@ const Investments = (): JSX.Element => {
           <DashboardGrid>
             <Card
               title="Date Range"
-              value={`${formatDate(data.fromDate)} → ${formatDate(
-                data.toDate
-              )}`}
+              value={`${formatDateReadable(
+                data.fromDate
+              )} → ${formatDateReadable(data.toDate)}`}
             />
             <Card
               title="Total P/L"
@@ -226,13 +229,106 @@ const Investments = (): JSX.Element => {
               }`}
             />
             <Card
-              title="Buying Power"
-              value={`${data.cashReport.at(-1)?.ending} ${
-                data.account.currency
-              }`}
+              title="Total Growth"
+              value={`${data.timeWeightedReturn.total}%`}
             />
             <Card title="Currency" value={data.account.currency} />
           </DashboardGrid>
+
+          <DashboardGrid>
+            <Card
+              title="Buying Power"
+              value={`${data.cashReport.ending} ${data.account.currency}`}
+            />
+            <Card
+              title="Total Amount Deposited"
+              value={`${data.cashReport.deposits} ${data.account.currency}`}
+            />
+            <Card
+              title="Total Amount Withdrew"
+              value={`${data.cashReport.withdrawals} ${data.account.currency}`}
+            />
+          </DashboardGrid>
+
+          <InfoContainer width="100%">
+            <h2>Portfolio Growth % Over Time</h2>
+            <ResponsiveContainer width="100%" height={400}>
+              <LineChart data={data.timeWeightedReturn.series}>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke={colors.charts.grid}
+                />
+                <XAxis
+                  dataKey="date"
+                  tickFormatter={(date) =>
+                    `${date.slice(4, 6)}/${date.slice(6, 8)}`
+                  }
+                />
+                <YAxis
+                  label={{
+                    value: "Growth (%)",
+                    angle: -90,
+                    position: "insideLeft",
+                    offset: 0,
+                    fill: colors.charts.axis,
+                    style: { fontSize: "0.8rem" },
+                  }}
+                />
+                <Tooltip
+                  formatter={(value: number) => `${value}%`}
+                  contentStyle={{
+                    backgroundColor: colors.charts.tooltipBg,
+                    border: `1px solid ${colors.charts.tooltipBg}`,
+                    borderRadius: radii.md,
+                    padding: spacing.sm,
+                    color: colors.charts.tooltipText,
+                  }}
+                  labelFormatter={(label) => `Date: ${formatDate(label)}`}
+                />
+                <defs>
+                  <linearGradient
+                    id="lineGradient"
+                    x1="0%"
+                    y1="0%"
+                    x2="0%"
+                    y2="100%"
+                  >
+                    {(() => {
+                      const series = data.timeWeightedReturn.series;
+                      const min = Math.min(...series.map((d) => d.twr));
+                      const max = Math.max(...series.map((d) => d.twr));
+                      const zeroOffset =
+                        max === min ? 50 : ((max - 0) / (max - min)) * 100;
+
+                      return (
+                        <>
+                          <stop offset="0%" stopColor={colors.charts.profit} />
+                          <stop
+                            offset={`${zeroOffset}%`}
+                            stopColor={colors.charts.profit}
+                          />
+                          <stop
+                            offset={`${zeroOffset}%`}
+                            stopColor={colors.charts.loss}
+                          />
+                          <stop offset="100%" stopColor={colors.charts.loss} />
+                        </>
+                      );
+                    })()}
+                  </linearGradient>
+                </defs>
+
+                <Line
+                  type="monotone"
+                  dataKey="twr"
+                  stroke="url(#lineGradient)"
+                  strokeWidth={2}
+                  dot={false}
+                  name="Growth"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </InfoContainer>
 
           <InfoContainer width="100%">
             <h2>Portfolio Value Over Time</h2>

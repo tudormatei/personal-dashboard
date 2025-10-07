@@ -14,8 +14,20 @@ export const formatNumber = (num: number | undefined | null): string => {
   return num.toLocaleString("en-US");
 };
 
-export const formatDateReadable = (d: string) => {
-  return new Date(d).toLocaleDateString("en-GB", {
+export const formatDateReadable = (d: string | undefined) => {
+  if (!d) return "";
+
+  const clean = d.replace(/-/g, "");
+
+  if (clean.length !== 8) return "";
+
+  const year = parseInt(clean.slice(0, 4), 10);
+  const month = parseInt(clean.slice(4, 6), 10) - 1;
+  const day = parseInt(clean.slice(6, 8), 10);
+
+  const date = new Date(year, month, day);
+
+  return date.toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "short",
     year: "numeric",

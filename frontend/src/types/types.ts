@@ -121,10 +121,21 @@ export interface InvestmentsData {
   fromDate?: string;
   toDate?: string;
   account: AccountInfo;
-  cashReport: CashReportItem[];
+  cashReport: CashReportItem;
   statementFunds: StatementFund[];
   openPositions: OpenPosition[];
   valueOverTime: ValueOverTime[];
   trades: Trade[];
   cashTransactions: CashTransaction[];
+  timeWeightedReturn: TimeWeightedReturn;
+}
+
+export interface TimeWeightedReturn {
+  total: number;
+  series: TWRPoint[];
+}
+
+export interface TWRPoint {
+  date: string;
+  twr: number;
 }

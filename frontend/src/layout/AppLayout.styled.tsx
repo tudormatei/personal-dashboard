@@ -67,7 +67,7 @@ export const ContentArea = styled.main`
   background-color: ${colors.background};
   background: ${colors.background};
   color: ${colors.textPrimary};
-  padding: ${spacing.xl};
+  padding: ${spacing.xxl};
   height: 100%;
   width: 100%;
   font-family: ${typography.fontFamily};

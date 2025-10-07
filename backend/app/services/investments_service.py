@@ -1,3 +1,4 @@
+from datetime import datetime
 from datetime import datetime, timedelta
 import os
 from typing import Any, Dict, List, Optional
@@ -37,7 +38,9 @@ async def request_full_period(start_date: str, end_date: str):
     if len(all_reports) == 0:
         return None
 
-    return merge_reports(all_reports)
+    merged_report = merge_reports(all_reports)
+
+    return merged_report
 
 
 async def request_financial_data(start_date:  Optional[str] = None, end_date:  Optional[str] = None):
@@ -111,7 +114,12 @@ def merge_reports(all_reports: List[Dict[str, Any]]) -> Dict[str, Any]:
             "id": None
         },
         "valueOverTime": [],
-        "cashReport": [],
+        "cashReport": {
+            "starting": None,
+            "ending": None,
+            "deposits": None,
+            "withdrawals": None
+        },
         "statementFunds": [],
         "openPositions": [],
         "trades": [],
@@ -139,18 +147,28 @@ def merge_reports(all_reports: List[Dict[str, Any]]) -> Dict[str, Any]:
             "fxRateToBase": position['@fxRateToBase'],
         })
 
+    response['cashReport']['starting'] = all_reports[0]['FlexQueryResponse'][
+        'FlexStatements']['FlexStatement']['CashReport']['CashReportCurrency']['@startingCash']
+    response['cashReport']['ending'] = all_reports[0]['FlexQueryResponse'][
+        'FlexStatements']['FlexStatement']['CashReport']['CashReportCurrency']['@endingCash']
+    response['cashReport']['deposits'] = 0
+    response['cashReport']['withdrawals'] = 0
+
     for report in all_reports:
         statement = report['FlexQueryResponse']['FlexStatements']['FlexStatement']
 
         cash_report = statement['CashReport']['CashReportCurrency']
-        response['cashReport'].append({'starting': cash_report['@startingCash'], 'deposits': cash_report['@deposits'],
-                                      'withdrawals': cash_report['@withdrawals'], 'ending': cash_report['@endingCash']})
+        response['cashReport']['deposits'] += cash_report['@deposits']
+        response['cashReport']['withdrawals'] += cash_report['@withdrawals']
 
         statement_funds = statement['StmtFunds']['StatementOfFundsLine']
         for s in statement_funds:
             response['statementFunds'].append({
                 "amount": s['@amount'],
+                "symbol": s["@symbol"],
                 "date": s['@date'],
+                "activityCode": s["@activityCode"],
+                "activityDescription": s["@activityDescription"]
             })
 
         statement_trades = statement['Trades']['Trade']
@@ -182,4 +200,66 @@ def merge_reports(all_reports: List[Dict[str, Any]]) -> Dict[str, Any]:
                 "total": e["@total"]
             })
 
+    response["valueOverTime"].sort(
+        key=lambda x: datetime.strptime(x["date"], "%Y%m%d")
+    )
+    response["statementFunds"].sort(
+        key=lambda x: datetime.strptime(x["date"], "%Y%m%d")
+    )
+
+    response["timeWeightedReturn"] = compute_time_weighted_return(
+        response["valueOverTime"],
+        response["statementFunds"]
+    )
+
     return response
+
+
+def compute_time_weighted_return(value_over_time, statement_funds):
+    value_over_time = sorted(value_over_time, key=lambda x: x["date"])
+    cash_flows = sorted(
+        [
+            {"date": s["date"], "amount": float(s["amount"])}
+            for s in statement_funds
+            if s.get("activityCode") in ("DEP", "WITH")
+        ],
+        key=lambda x: x["date"],
+    )
+
+    twr = 1.0
+    prev_value = float(value_over_time[0]["total"])
+    cf_index = 0
+    cf_len = len(cash_flows)
+
+    twr_timeseries = [
+        {"date": value_over_time[0]["date"], "twr": 0.0}
+    ]
+
+    for i in range(1, len(value_over_time)):
+        date = value_over_time[i]["date"]
+        curr_value = float(value_over_time[i]["total"])
+
+        net_cf = 0.0
+        while cf_index < cf_len and cash_flows[cf_index]["date"] <= date:
+            net_cf += cash_flows[cf_index]["amount"]
+            cf_index += 1
+
+        denominator = prev_value + net_cf
+        if denominator <= 0:
+            continue
+
+        sub_return = (curr_value - denominator) / denominator
+        twr *= (1 + sub_return)
+
+        twr_timeseries.append({
+            "date": date,
+            "twr": round((twr - 1) * 100, 2)
+        })
+
+        prev_value = curr_value
+
+    total_twr = (twr - 1) * 100
+    return {
+        "total": round(total_twr, 2),
+        "series": twr_timeseries
+    }
