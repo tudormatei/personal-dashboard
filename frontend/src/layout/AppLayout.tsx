@@ -1,5 +1,5 @@
 import { type FC, type ReactNode } from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
   LayoutContainer,
   Sidebar,
@@ -24,7 +24,10 @@ const AppLayout: FC<AppLayoutProps> = ({ children }) => {
   return (
     <LayoutContainer>
       <Sidebar>
-        <Logo>D</Logo>
+        <Link to="/">
+          <Logo>D</Logo>
+        </Link>
+        <Separator />
         <SidebarItem to="/upload" active={pathname === "/upload"}>
           <IoMdCloudUpload size={22} />
         </SidebarItem>

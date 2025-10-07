@@ -31,11 +31,9 @@ export const Separator = styled.div`
 `;
 
 export const Logo = styled.div`
-  margin-top: ${spacing.sm};
   font-size: 1.25rem;
   font-weight: ${typography.fontWeight.bold};
   color: ${colors.accent};
-  margin-bottom: ${spacing.lg};
   text-shadow: ${shadows.accent};
 `;
 
