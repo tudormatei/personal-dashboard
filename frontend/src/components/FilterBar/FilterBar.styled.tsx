@@ -12,7 +12,6 @@ export const FiltersWrapper = styled.div`
   flex-wrap: wrap;
   align-items: center;
   gap: ${spacing.md};
-  margin-bottom: ${spacing.lg};
   padding: ${spacing.md};
   background: ${colors.surfaceAlt};
   border: 1px solid ${colors.border};

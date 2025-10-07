@@ -4,55 +4,67 @@ import { colors, radii, spacing, typography } from "../../constants/styling";
 export const Header = styled.h1`
   font-size: ${typography.fontSize.xl};
   font-weight: ${typography.fontWeight.bold};
-  margin-bottom: ${spacing.lg};
 `;
 
 export const DashboardGrid = styled.div`
-  margin-top: ${spacing.lg};
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: ${spacing.lg};
+`;
+
+export const ChartWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: ${spacing.md};
 `;
 
 export const CalendarTimeline = styled.div`
   display: flex;
   gap: ${spacing.xl};
   overflow-x: auto;
-  margin-top: ${spacing.lg};
   scroll-behavior: smooth;
+  min-height: 300px;
 
   &::-webkit-scrollbar {
-    height: 8px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: ${colors.accent};
-    border-radius: 4px;
+    width: 8px;
   }
 
   &::-webkit-scrollbar-track {
-    background: ${colors.surfaceAlt};
+    background: ${colors.background};
+    border-radius: ${radii.md};
   }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: ${colors.surfaceAlt};
+    border-radius: ${radii.md};
+    border: 2px solid ${colors.background};
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: ${colors.surfaceAlt};
+    opacity: 0.8;
+  }
+
+  scrollbar-width: thin;
+  scrollbar-color: ${colors.surfaceAlt} ${colors.background};
 `;
 
 export const MonthContainer = styled.div`
   min-width: 280px;
   display: flex;
   flex-direction: column;
-  margin-bottom: ${spacing.md};
 `;
 
 export const MonthLabel = styled.h3`
   font-size: ${typography.fontSize.base};
   font-weight: ${typography.fontWeight.bold};
-  margin-bottom: ${spacing.sm};
   text-align: center;
 `;
 
 export const WeekdayHeader = styled.div`
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  margin-bottom: ${spacing.xs};
   text-align: center;
   font-weight: ${typography.fontWeight.bold};
   color: ${colors.textMuted};

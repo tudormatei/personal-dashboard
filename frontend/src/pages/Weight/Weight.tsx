@@ -16,6 +16,7 @@ import { colors, radii, spacing } from "../../constants/styling";
 import type { MaintenanceData, WeightRecord } from "../../types/types";
 import Loader from "../../components/Loader/Loader";
 import Alert from "../../components/Alert/Alert";
+import { formatDateReadable } from "../../utils/utils";
 
 const Weight = (): JSX.Element => {
   const [weightData, setWeightData] = useState<WeightRecord[] | null>(null);
@@ -77,13 +78,6 @@ const Weight = (): JSX.Element => {
                 dataKey="date"
                 tickFormatter={(d) => new Date(d).toLocaleDateString()}
                 stroke={colors.charts.axis}
-                label={{
-                  value: "Date",
-                  position: "insideBottom",
-                  offset: -5,
-                  fill: colors.charts.axis,
-                  style: { fontSize: "0.8rem" },
-                }}
               />
               <YAxis
                 stroke={colors.charts.axis}
@@ -105,7 +99,7 @@ const Weight = (): JSX.Element => {
                   padding: spacing.sm,
                   color: colors.charts.tooltipText,
                 }}
-                labelFormatter={(d) => new Date(d).toLocaleDateString()}
+                labelFormatter={(d) => formatDateReadable(d)}
               />
               <Line
                 type="monotone"
@@ -114,35 +108,28 @@ const Weight = (): JSX.Element => {
                 strokeWidth={2}
                 dot={{ r: 4 }}
                 activeDot={{ r: 6 }}
-                name="Weight"
+                name="Weight (kg)"
               />
-              <Line
-                type="monotone"
-                dataKey="ma7"
-                stroke={colors.charts.ma7}
-                strokeWidth={1.5}
-                dot={false}
-                name="7d MA"
-                hide={!weightData.some((d) => d.ma7 !== null)}
-              />
-              <Line
-                type="monotone"
-                dataKey="ma30"
-                stroke={colors.charts.ma30}
-                strokeWidth={1.5}
-                dot={false}
-                name="30d MA"
-                hide={!weightData.some((d) => d.ma30 !== null)}
-              />
-              <Line
-                type="monotone"
-                dataKey="ma90"
-                stroke={colors.charts.ma90}
-                strokeWidth={1.5}
-                dot={false}
-                name="90d MA"
-                hide={!weightData.some((d) => d.ma90 !== null)}
-              />
+              {["ma7", "ma30", "ma90"].map((ma) => {
+                if (
+                  !weightData.some((d) => d[ma as keyof WeightRecord] !== null)
+                )
+                  return null;
+
+                return (
+                  <Line
+                    key={ma}
+                    type="monotone"
+                    dataKey={ma}
+                    stroke={
+                      colors.charts[ma as keyof typeof colors.charts] as string
+                    }
+                    strokeWidth={1.5}
+                    dot={false}
+                    name={`Weight (kg) ${ma.replace("ma", "")}d MA`}
+                  />
+                );
+              })}
               <Legend />
             </LineChart>
           </ResponsiveContainer>

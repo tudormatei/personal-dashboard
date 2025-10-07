@@ -1,5 +1,5 @@
 import { useState, type JSX } from "react";
-import { Header, DashboardGrid } from "./Macros.styled";
+import { Header, DashboardGrid, NutrientContainer } from "./Macros.styled";
 import {
   LineChart,
   Line,
@@ -8,6 +8,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Legend,
 } from "recharts";
 import Card from "../../components/Card/Card";
 import FilterBar from "../../components/FilterBar/FilterBar";
@@ -15,6 +16,7 @@ import { colors, radii, spacing } from "../../constants/styling";
 import type { MacrosData, NutrientRecord } from "../../types/types";
 import Loader from "../../components/Loader/Loader";
 import Alert from "../../components/Alert/Alert";
+import { formatDateReadable } from "../../utils/utils";
 
 const nutrients = [
   { key: "calories", label: "Calories (kcal)" },
@@ -61,20 +63,15 @@ const Macros = (): JSX.Element => {
       {error && <Alert text={error} type="error" />}
 
       {macrosData &&
-        nutrients.map((nutrient, idx) => {
+        nutrients.map((nutrient) => {
           const data =
             macrosData[nutrient.key as keyof MacrosData]?.daily ?? [];
           const summary = macrosData[nutrient.key as keyof MacrosData]?.summary;
           if (!data || data.length === 0) return null;
 
           return (
-            <div
-              key={nutrient.key}
-              style={{
-                marginBottom: idx === nutrients.length - 1 ? 0 : spacing.lg,
-              }}
-            >
-              <ResponsiveContainer width="100%" height={250}>
+            <NutrientContainer key={nutrient.key}>
+              <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={data}>
                   <CartesianGrid
                     strokeDasharray="3 3"
@@ -105,7 +102,7 @@ const Macros = (): JSX.Element => {
                       padding: spacing.sm,
                       color: colors.charts.tooltipText,
                     }}
-                    labelFormatter={(d) => new Date(d).toLocaleDateString()}
+                    labelFormatter={(d) => formatDateReadable(d)}
                   />
                   <Line
                     type="monotone"
@@ -143,6 +140,7 @@ const Macros = (): JSX.Element => {
                       />
                     );
                   })}
+                  <Legend />
                 </LineChart>
               </ResponsiveContainer>
 
@@ -158,7 +156,7 @@ const Macros = (): JSX.Element => {
                   <Card title="Std Dev" value={summary.std_dev} />
                 </DashboardGrid>
               )}
-            </div>
+            </NutrientContainer>
           );
         })}
     </>

@@ -106,7 +106,7 @@ const Investments = (): JSX.Element => {
       {data && (
         <>
           <PositionsContainer>
-            <InfoContainer width="65%" noMarginTop>
+            <InfoContainer width="65%">
               <h2>Open Positions</h2>
               <Table
                 headers={[
@@ -148,7 +148,7 @@ const Investments = (): JSX.Element => {
               </Table>
             </InfoContainer>
 
-            <InfoContainer width="35%" noMarginTop>
+            <InfoContainer width="35%">
               <h2>Portfolio Allocation (%)</h2>
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
@@ -248,7 +248,16 @@ const Investments = (): JSX.Element => {
                     `${date.slice(4, 6)}/${date.slice(6, 8)}`
                   }
                 />
-                <YAxis />
+                <YAxis
+                  label={{
+                    value: "Value ($)",
+                    angle: -90,
+                    position: "insideLeft",
+                    offset: 0,
+                    fill: colors.charts.axis,
+                    style: { fontSize: "0.8rem" },
+                  }}
+                />
                 <Tooltip
                   formatter={(value: number) => `$${formatNumber(value)}`}
                   contentStyle={{
@@ -370,7 +379,16 @@ const Investments = (): JSX.Element => {
                     `${date.slice(4, 6)}/${date.slice(6, 8)}`
                   }
                 />
-                <YAxis />
+                <YAxis
+                  label={{
+                    value: "Value ($)",
+                    angle: -90,
+                    position: "insideLeft",
+                    offset: 0,
+                    fill: colors.charts.axis,
+                    style: { fontSize: "0.8rem" },
+                  }}
+                />
                 <Tooltip
                   formatter={(value: number) => `$${value.toFixed(2)}`}
                   contentStyle={{

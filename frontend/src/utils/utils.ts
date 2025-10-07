@@ -13,3 +13,11 @@ export const formatNumber = (num: number | undefined | null): string => {
 
   return num.toLocaleString("en-US");
 };
+
+export const formatDateReadable = (d: string) => {
+  return new Date(d).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};

@@ -15,12 +15,15 @@ async def request_full_period(start_date: str, end_date: str):
     )
     end = datetime.strptime(end_date, DATE_FMT)
 
+    today = datetime.today().date()
+    if end.date() >= today:
+        end = datetime.combine(today - timedelta(days=1), datetime.min.time())
+
     all_reports = []
     chunk_start = start
 
     while chunk_start <= end:
         chunk_end = min(chunk_start + timedelta(days=364), end)
-        print(f"Fetching {chunk_start.date()} → {chunk_end.date()}")
 
         report = await request_financial_data(
             start_date=chunk_start.strftime(DATE_FMT),
@@ -30,6 +33,9 @@ async def request_full_period(start_date: str, end_date: str):
             all_reports.append(report)
 
         chunk_start = chunk_end + timedelta(days=1)
+
+    if len(all_reports) == 0:
+        return None
 
     return merge_reports(all_reports)
 

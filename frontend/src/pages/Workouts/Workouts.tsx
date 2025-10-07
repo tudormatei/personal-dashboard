@@ -13,6 +13,7 @@ import {
   CalendarGrid,
   MonthLabel,
   WeekdayHeader,
+  ChartWrapper,
 } from "./Workouts.styled";
 import { colors, radii, spacing } from "../../constants/styling";
 import {
@@ -198,101 +199,135 @@ const Workouts = () => {
             })}
           </CalendarTimeline>
 
-          <h2 style={{ marginTop: spacing.lg, marginBottom: spacing.lg }}>
-            Sessions by Weekday
-          </h2>
-          <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={weekdayData}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke={colors.charts.grid}
-              />
-              <XAxis dataKey="day" stroke={colors.charts.axis} />
-              <YAxis stroke={colors.charts.axis} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: colors.charts.tooltipBg,
-                  border: `1px solid ${colors.charts.tooltipBg}`,
-                  borderRadius: radii.md,
-                  padding: spacing.sm,
-                  color: colors.charts.tooltipText,
-                }}
-              />
-              <Bar dataKey="count" fill={colors.accent} />
-            </BarChart>
-          </ResponsiveContainer>
+          <ChartWrapper>
+            <h2>Sessions by Weekday</h2>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={weekdayData}>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke={colors.charts.grid}
+                />
+                <XAxis dataKey="day" stroke={colors.charts.axis} />
+                <YAxis
+                  stroke={colors.charts.axis}
+                  label={{
+                    value: "No. Sessions",
+                    angle: -90,
+                    position: "insideLeft",
+                    offset: 0,
+                    fill: colors.charts.axis,
+                    style: { fontSize: "0.8rem" },
+                  }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: colors.charts.tooltipBg,
+                    border: `1px solid ${colors.charts.tooltipBg}`,
+                    borderRadius: radii.md,
+                    padding: spacing.sm,
+                    color: colors.charts.tooltipText,
+                  }}
+                />
+                <Bar dataKey="count" fill={colors.accent} name="Sessions" />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartWrapper>
 
-          {Object.keys(data.sessions_per_week || {}).length >= 2 && (
-            <>
-              <h2 style={{ marginTop: spacing.lg, marginBottom: spacing.lg }}>
-                Sessions per Week
-              </h2>
-              <ResponsiveContainer width="100%" height={250}>
-                <LineChart
-                  data={Object.entries(data.sessions_per_week).map(
-                    ([week, count]) => ({ week, count })
-                  )}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke={colors.charts.grid}
-                  />
-                  <XAxis dataKey="week" stroke={colors.charts.axis} />
-                  <YAxis stroke={colors.charts.axis} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: colors.charts.tooltipBg,
-                      border: `1px solid ${colors.charts.tooltipBg}`,
-                      borderRadius: radii.md,
-                      padding: spacing.sm,
-                      color: colors.charts.tooltipText,
-                    }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="count"
-                    stroke={colors.accent}
-                    strokeWidth={2}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </>
-          )}
+          <ChartWrapper>
+            {Object.keys(data.sessions_per_week || {}).length >= 2 && (
+              <>
+                <h2>Sessions per Week</h2>
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart
+                    data={Object.entries(data.sessions_per_week).map(
+                      ([week, count]) => ({ week, count })
+                    )}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke={colors.charts.grid}
+                    />
+                    <XAxis dataKey="week" stroke={colors.charts.axis} />
+                    <YAxis
+                      stroke={colors.charts.axis}
+                      label={{
+                        value: "No. Sessions",
+                        angle: -90,
+                        position: "insideLeft",
+                        offset: 0,
+                        fill: colors.charts.axis,
+                        style: { fontSize: "0.8rem" },
+                      }}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: colors.charts.tooltipBg,
+                        border: `1px solid ${colors.charts.tooltipBg}`,
+                        borderRadius: radii.md,
+                        padding: spacing.sm,
+                        color: colors.charts.tooltipText,
+                      }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="count"
+                      stroke={colors.accent}
+                      strokeWidth={2}
+                      name="Sessions"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </>
+            )}
+          </ChartWrapper>
 
-          {Object.keys(data.sessions_per_month || {}).length >= 2 && (
-            <>
-              <h2 style={{ marginTop: spacing.xl }}>Sessions per Month</h2>
-              <ResponsiveContainer width="100%" height={250}>
-                <LineChart
-                  data={Object.entries(data.sessions_per_month).map(
-                    ([month, count]) => ({ month, count })
-                  )}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke={colors.charts.grid}
-                  />
-                  <XAxis dataKey="month" stroke={colors.charts.axis} />
-                  <YAxis stroke={colors.charts.axis} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: colors.charts.tooltipBg,
-                      border: `1px solid ${colors.charts.tooltipBg}`,
-                      borderRadius: radii.md,
-                      padding: spacing.sm,
-                      color: colors.charts.tooltipText,
-                    }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="count"
-                    stroke={colors.accent}
-                    strokeWidth={2}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </>
-          )}
+          <ChartWrapper>
+            {Object.keys(data.sessions_per_month || {}).length >= 2 && (
+              <>
+                <h2>Sessions per Month</h2>
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart
+                    data={Object.entries(data.sessions_per_month).map(
+                      ([month, count]) => ({ month, count })
+                    )}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke={colors.charts.grid}
+                    />
+                    <XAxis dataKey="month" stroke={colors.charts.axis} />
+                    <YAxis
+                      stroke={colors.charts.axis}
+                      label={{
+                        value: "No. Sessions",
+                        angle: -90,
+                        position: "insideLeft",
+                        offset: 0,
+                        fill: colors.charts.axis,
+                        style: { fontSize: "0.8rem" },
+                      }}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: colors.charts.tooltipBg,
+                        border: `1px solid ${colors.charts.tooltipBg}`,
+                        borderRadius: radii.md,
+                        padding: spacing.sm,
+                        color: colors.charts.tooltipText,
+                      }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="count"
+                      stroke={colors.accent}
+                      strokeWidth={2}
+                      name="Sessions"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </>
+            )}
+          </ChartWrapper>
         </>
       )}
     </>

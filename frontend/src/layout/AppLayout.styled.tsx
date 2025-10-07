@@ -73,6 +73,9 @@ export const ContentArea = styled.main`
   height: 100%;
   width: 100%;
   font-family: ${typography.fontFamily};
+  display: flex;
+  flex-direction: column;
+  gap: ${spacing.lg};
   overflow-x: hidden;
   overflow-y: auto;
 
