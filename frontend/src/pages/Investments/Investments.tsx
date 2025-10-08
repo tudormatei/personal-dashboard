@@ -34,6 +34,7 @@ import {
   formatDateReadable,
   formatNumber,
 } from "../../utils/utils";
+import MonteCarloSimulation from "./MonteCarloSimulation";
 
 type Fund = {
   date: string;
@@ -99,6 +100,13 @@ const Investments = (): JSX.Element => {
         )
       )
     : [];
+
+  const latestValue = data?.valueOverTime.at(-1)?.total ?? 0;
+  const startValue = data?.valueOverTime.at(0)?.total ?? 0;
+  const totalPL = data?.openPositions.reduce(
+    (acc, pos) => acc + (pos.positionValue - pos.costBasisMoney),
+    0
+  );
 
   return (
     <>
@@ -206,49 +214,68 @@ const Investments = (): JSX.Element => {
             </InfoContainer>
           </PositionsContainer>
 
-          <DashboardGrid>
-            <Card
-              title="Date Range"
-              value={`${formatDateReadable(
-                data.fromDate
-              )} → ${formatDateReadable(data.toDate)}`}
-            />
-            <Card
-              title="Total P/L"
-              value={`${formatNumber(
-                data.openPositions.reduce(
-                  (acc, pos) => acc + (pos.positionValue - pos.costBasisMoney),
-                  0
-                )
-              )} ${data.account.currency}`}
-            />
-            <Card
-              title="Total Value"
-              value={`${formatNumber(data.valueOverTime.at(-1)?.total)} ${
-                data.account.currency
-              }`}
-            />
-            <Card
-              title="Total Growth"
-              value={`${data.timeWeightedReturn.total}%`}
-            />
-            <Card title="Currency" value={data.account.currency} />
-          </DashboardGrid>
+          <InfoContainer>
+            <h2>Current Stats</h2>
+            <DashboardGrid>
+              <Card
+                title="Total P/L"
+                value={`${formatNumber(totalPL)} ${data.account.currency}`}
+              />
+              <Card
+                title="Total Value"
+                value={`${formatNumber(latestValue)} ${data.account.currency}`}
+              />
+              {totalPL && latestValue && (
+                <Card
+                  title="Total % Return"
+                  value={`${formatNumber(
+                    (totalPL / (latestValue - totalPL)) * 100,
+                    true
+                  )}%`}
+                />
+              )}
+              <Card
+                title="Buying Power"
+                value={`${data.cashReport.ending} ${data.account.currency}`}
+              />
+            </DashboardGrid>
+          </InfoContainer>
 
-          <DashboardGrid>
-            <Card
-              title="Buying Power"
-              value={`${data.cashReport.ending} ${data.account.currency}`}
-            />
-            <Card
-              title="Total Amount Deposited"
-              value={`${data.cashReport.deposits} ${data.account.currency}`}
-            />
-            <Card
-              title="Total Amount Withdrew"
-              value={`${data.cashReport.withdrawals} ${data.account.currency}`}
-            />
-          </DashboardGrid>
+          <InfoContainer>
+            <h2>Period Stats</h2>
+            <DashboardGrid>
+              <Card
+                title="Date Range"
+                value={`${formatDateReadable(
+                  data.fromDate
+                )} → ${formatDateReadable(data.toDate)}`}
+              />
+              <Card
+                title="Period % Growth"
+                value={`${data.timeWeightedReturn.total}%`}
+              />
+              {latestValue && (
+                <Card
+                  title="Period Value Growth"
+                  value={`${formatNumber(
+                    latestValue -
+                      (data.valueOverTime[0].total +
+                        data.cashReport.deposits -
+                        data.cashReport.withdrawals)
+                  )} ${data.account.currency}`}
+                />
+              )}
+
+              <Card
+                title="Amount Deposited During Period"
+                value={`${data.cashReport.deposits} ${data.account.currency}`}
+              />
+              <Card
+                title="Amount Withdrew During Period"
+                value={`${data.cashReport.withdrawals} ${data.account.currency}`}
+              />
+            </DashboardGrid>
+          </InfoContainer>
 
           <InfoContainer width="100%">
             <h2>Portfolio Growth % Over Time</h2>
@@ -391,6 +418,15 @@ const Investments = (): JSX.Element => {
               </LineChart>
             </ResponsiveContainer>
           </InfoContainer>
+
+          {data && (
+            <>
+              <MonteCarloSimulation
+                startValue={startValue}
+                twrSeries={data.timeWeightedReturn.series}
+              />
+            </>
+          )}
 
           <CashContainer>
             <InfoContainer width="35%">

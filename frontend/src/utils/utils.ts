@@ -8,8 +8,17 @@ export const formatDate = (dateStr: string | undefined | null): string => {
   return `${month}/${day}/${year}`;
 };
 
-export const formatNumber = (num: number | undefined | null): string => {
+export const formatNumber = (
+  num: number | undefined | null,
+  round = false
+): string => {
   if (!num) return "";
+
+  if (round) {
+    num = parseFloat(num.toFixed(2));
+
+    if (!num) return "";
+  }
 
   return num.toLocaleString("en-US");
 };

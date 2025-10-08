@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 import os
 from typing import Any, Dict, List, Optional
 import aiohttp
+import numpy as np
+import pandas as pd
 import xmltodict
 import asyncio
 
@@ -38,7 +40,7 @@ async def request_full_period(start_date: str, end_date: str):
     if len(all_reports) == 0:
         return None
 
-    merged_report = merge_reports(all_reports)
+    merged_report = build_final_report(all_reports)
 
     return merged_report
 
@@ -103,7 +105,7 @@ def type_converter(path, key, value):
     return key, value
 
 
-def merge_reports(all_reports: List[Dict[str, Any]]) -> Dict[str, Any]:
+def build_final_report(all_reports: List[Dict[str, Any]]) -> Dict[str, Any]:
     response = {
         "reports": len(all_reports),
         "fromDate": all_reports[0]['FlexQueryResponse']['FlexStatements']['FlexStatement']['@fromDate'],
@@ -149,7 +151,7 @@ def merge_reports(all_reports: List[Dict[str, Any]]) -> Dict[str, Any]:
 
     response['cashReport']['starting'] = all_reports[0]['FlexQueryResponse'][
         'FlexStatements']['FlexStatement']['CashReport']['CashReportCurrency']['@startingCash']
-    response['cashReport']['ending'] = all_reports[0]['FlexQueryResponse'][
+    response['cashReport']['ending'] = all_reports[-1]['FlexQueryResponse'][
         'FlexStatements']['FlexStatement']['CashReport']['CashReportCurrency']['@endingCash']
     response['cashReport']['deposits'] = 0
     response['cashReport']['withdrawals'] = 0
@@ -263,3 +265,77 @@ def compute_time_weighted_return(value_over_time, statement_funds):
         "total": round(total_twr, 2),
         "series": twr_timeseries
     }
+
+
+def run_monte_carlo_simulation(start_portolio_value, twr_series, monthly_deposit, monthly_withdrawal,
+                               days_ahead, sims):
+    # -------------------------
+    # Step 1: Convert TWR series to daily returns
+    # -------------------------
+    twr_df = pd.DataFrame(twr_series)
+    twr_df['twr'] = twr_df['twr'].astype(float)
+    twr_df['date'] = pd.to_datetime(twr_df['date'], format='%Y%m%d')
+    twr_df.sort_values('date', inplace=True)
+
+    twr_df['prev_twr'] = twr_df['twr'].shift(1, fill_value=0)
+    twr_df['daily_return'] = (1 + twr_df['twr'] / 100) / \
+        (1 + twr_df['prev_twr'] / 100) - 1
+    daily_returns = twr_df['daily_return'].values
+
+    # -------------------------
+    # Step 2: Monte Carlo simulation (daily)
+    # -------------------------
+    simulated_paths = np.zeros((days_ahead, sims))
+
+    for i in range(sims):
+        vals = [start_portolio_value]
+        for day in range(days_ahead):
+            r = np.random.choice(daily_returns)
+            new_val = vals[-1] * (1 + r)
+            # Add cash flow only on every ~21st trading day
+            if (day + 1) % 21 == 0:
+                new_val += (monthly_deposit - monthly_withdrawal)
+            vals.append(new_val)
+        simulated_paths[:, i] = vals[1:]
+
+    # -------------------------
+    # Step 3: Calculate percentiles
+    # -------------------------
+    percentiles = [5, 25, 50, 75, 95]
+    projections = {p: np.percentile(simulated_paths, p, axis=1)
+                   for p in percentiles}
+
+    # -------------------------
+    # Step 4: Baseline (no returns, only deposits/withdrawals)
+    # -------------------------
+    baseline = [start_portolio_value]
+    for day in range(days_ahead):
+        new_val = baseline[-1]
+        if (day + 1) % 21 == 0:
+            new_val += (monthly_deposit - monthly_withdrawal)
+        baseline.append(new_val)
+    baseline = baseline[1:]  # drop initial value
+
+    # -------------------------
+    # Step 5: Build response
+    # -------------------------
+    last_date = pd.to_datetime(twr_series[-1]['date'], format='%Y%m%d')
+    future_dates = [last_date +
+                    pd.Timedelta(days=i + 1) for i in range(days_ahead)]
+
+    response = {
+        "portfolioProjection": [
+            {
+                "date": future_dates[i].strftime('%Y%m%d'),
+                "p5": round(projections[5][i], 2),
+                "p25": round(projections[25][i], 2),
+                "p50": round(projections[50][i], 2),
+                "p75": round(projections[75][i], 2),
+                "p95": round(projections[95][i], 2),
+                "baseline": round(baseline[i], 2),
+            }
+            for i in range(days_ahead)
+        ]
+    }
+
+    return response
