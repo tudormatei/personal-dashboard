@@ -20,13 +20,14 @@ async def get_financial_data(
 
 
 def monte_carlo_task(job_id, start_value, twr_series, monthly_deposit, monthly_withdrawal,
-                     days_ahead, sims):
+                     days_ahead, sims, target_value):
     result = run_monte_carlo_simulation(
         start_value, twr_series,
         monthly_deposit=monthly_deposit,
         monthly_withdrawal=monthly_withdrawal,
         days_ahead=days_ahead,
-        sims=sims
+        sims=sims,
+        target_value=target_value
     )
     jobs[job_id] = result
 
@@ -38,6 +39,7 @@ class MonteCarloRequest(BaseModel):
     monthly_withdrawal: float = 0
     days_ahead: int = 100
     sims: int = 5000
+    target_value: float | None = None
 
 
 @router.post("/monte-carlo-simulations")
@@ -56,7 +58,8 @@ async def start_monte_carlo(
         request.monthly_deposit,
         request.monthly_withdrawal,
         request.days_ahead,
-        request.sims
+        request.sims,
+        request.target_value
     )
 
     return {"job_id": job_id, "status": "running"}

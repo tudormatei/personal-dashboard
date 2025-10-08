@@ -1,11 +1,28 @@
 export const formatDate = (dateStr: string | undefined | null): string => {
   if (!dateStr) return "";
 
-  const year = dateStr.slice(0, 4);
-  const month = dateStr.slice(4, 6);
-  const day = dateStr.slice(6, 8);
+  const dateOnly = dateStr.split("T")[0].split(" ")[0];
+  const clean = dateOnly.replace(/\D/g, "");
 
-  return `${month}/${day}/${year}`;
+  const year = clean.slice(0, 4);
+  const month = clean.slice(4, 6);
+  const day = clean.slice(6, 8);
+
+  return `${day}/${month}/${year}`;
+};
+
+export const formatDateDayMonth = (
+  dateStr: string | undefined | null
+): string => {
+  if (!dateStr) return "";
+
+  const dateOnly = dateStr.split("T")[0].split(" ")[0];
+  const clean = dateOnly.replace(/\D/g, "");
+
+  const month = clean.slice(4, 6);
+  const day = clean.slice(6, 8);
+
+  return `${day}/${month}`;
 };
 
 export const formatNumber = (

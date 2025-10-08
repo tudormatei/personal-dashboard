@@ -16,7 +16,7 @@ import { colors, radii, spacing } from "../../constants/styling";
 import type { MaintenanceData, WeightRecord } from "../../types/types";
 import Loader from "../../components/Loader/Loader";
 import Alert from "../../components/Alert/Alert";
-import { formatDateReadable } from "../../utils/utils";
+import { formatDate } from "../../utils/utils";
 
 const Weight = (): JSX.Element => {
   const [weightData, setWeightData] = useState<WeightRecord[] | null>(null);
@@ -76,7 +76,7 @@ const Weight = (): JSX.Element => {
               />
               <XAxis
                 dataKey="date"
-                tickFormatter={(d) => new Date(d).toLocaleDateString()}
+                tickFormatter={(d) => formatDate(d)}
                 stroke={colors.charts.axis}
               />
               <YAxis
@@ -99,7 +99,7 @@ const Weight = (): JSX.Element => {
                   padding: spacing.sm,
                   color: colors.charts.tooltipText,
                 }}
-                labelFormatter={(d) => formatDateReadable(d)}
+                labelFormatter={(label) => `Date: ${formatDate(label)}`}
               />
               <Line
                 type="monotone"

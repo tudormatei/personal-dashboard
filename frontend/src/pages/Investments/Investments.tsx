@@ -31,6 +31,7 @@ import type { InvestmentsData } from "../../types/types";
 import { colors, radii, spacing } from "../../constants/styling";
 import {
   formatDate,
+  formatDateDayMonth,
   formatDateReadable,
   formatNumber,
 } from "../../utils/utils";
@@ -286,12 +287,12 @@ const Investments = (): JSX.Element => {
                   stroke={colors.charts.grid}
                 />
                 <XAxis
+                  stroke={colors.charts.axis}
                   dataKey="date"
-                  tickFormatter={(date) =>
-                    `${date.slice(4, 6)}/${date.slice(6, 8)}`
-                  }
+                  tickFormatter={(date) => `${formatDateDayMonth(date)}`}
                 />
                 <YAxis
+                  stroke={colors.charts.axis}
                   label={{
                     value: "Growth (%)",
                     angle: -90,
@@ -366,12 +367,12 @@ const Investments = (): JSX.Element => {
                   stroke={colors.charts.grid}
                 />
                 <XAxis
+                  stroke={colors.charts.axis}
                   dataKey="date"
-                  tickFormatter={(date) =>
-                    `${date.slice(4, 6)}/${date.slice(6, 8)}`
-                  }
+                  tickFormatter={(date) => `${formatDateDayMonth(date)}`}
                 />
                 <YAxis
+                  stroke={colors.charts.axis}
                   label={{
                     value: "Value ($)",
                     angle: -90,
@@ -506,12 +507,12 @@ const Investments = (): JSX.Element => {
                   stroke={colors.charts.grid}
                 />
                 <XAxis
+                  stroke={colors.charts.axis}
                   dataKey="date"
-                  tickFormatter={(date) =>
-                    `${date.slice(4, 6)}/${date.slice(6, 8)}`
-                  }
+                  tickFormatter={(date) => `${formatDateDayMonth(date)}`}
                 />
                 <YAxis
+                  stroke={colors.charts.axis}
                   label={{
                     value: "Value ($)",
                     angle: -90,

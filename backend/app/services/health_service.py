@@ -270,8 +270,8 @@ def estimate_maintenance(
     slope_kg_per_day = model.coef_[0]
     daily_adjustment = slope_kg_per_day * 7700
 
-    pred_start = model.predict([[df['day_num'].iloc[0]]])[0]
-    pred_end = model.predict([[df['day_num'].iloc[-1]]])[0]
+    pred_start = model.predict(pd.DataFrame({"day_num": [df['day_num'].iloc[0]]}))[0]
+    pred_end = model.predict(pd.DataFrame({"day_num": [df['day_num'].iloc[-1]]}))[0]
 
     avg_daily_calories = df['calories_ma'].mean()
     daily_exercise_calories = (

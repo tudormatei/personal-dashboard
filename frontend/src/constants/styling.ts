@@ -38,6 +38,13 @@ export const colors = {
       "#795548",
     ],
 
+    baseline: "#ff8c00",
+    p5: "#4caf50",
+    p25: "#2196f3",
+    p50: "#ff5252",
+    p75: "#9c27b0",
+    p95: "#ffca28",
+
     primary: "#ff8c00",
     secondary: "#4caf50",
 

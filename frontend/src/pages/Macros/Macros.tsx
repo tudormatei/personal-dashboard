@@ -16,7 +16,7 @@ import { colors, radii, spacing } from "../../constants/styling";
 import type { MacrosData, NutrientRecord } from "../../types/types";
 import Loader from "../../components/Loader/Loader";
 import Alert from "../../components/Alert/Alert";
-import { formatDateReadable } from "../../utils/utils";
+import { formatDate } from "../../utils/utils";
 
 const nutrients = [
   { key: "calories", label: "Calories (kcal)" },
@@ -80,7 +80,7 @@ const Macros = (): JSX.Element => {
                   <XAxis
                     dataKey="date"
                     stroke={colors.charts.axis}
-                    tickFormatter={(d) => new Date(d).toLocaleDateString()}
+                    tickFormatter={(d) => formatDate(d)}
                   />
                   <YAxis
                     stroke={colors.charts.axis}
@@ -102,7 +102,7 @@ const Macros = (): JSX.Element => {
                       padding: spacing.sm,
                       color: colors.charts.tooltipText,
                     }}
-                    labelFormatter={(d) => formatDateReadable(d)}
+                    labelFormatter={(label) => `Date: ${formatDate(label)}`}
                   />
                   <Line
                     type="monotone"

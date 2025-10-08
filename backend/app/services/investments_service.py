@@ -268,10 +268,7 @@ def compute_time_weighted_return(value_over_time, statement_funds):
 
 
 def run_monte_carlo_simulation(start_portolio_value, twr_series, monthly_deposit, monthly_withdrawal,
-                               days_ahead, sims):
-    # -------------------------
-    # Step 1: Convert TWR series to daily returns
-    # -------------------------
+                               days_ahead, sims, target_value):
     twr_df = pd.DataFrame(twr_series)
     twr_df['twr'] = twr_df['twr'].astype(float)
     twr_df['date'] = pd.to_datetime(twr_df['date'], format='%Y%m%d')
@@ -282,9 +279,6 @@ def run_monte_carlo_simulation(start_portolio_value, twr_series, monthly_deposit
         (1 + twr_df['prev_twr'] / 100) - 1
     daily_returns = twr_df['daily_return'].values
 
-    # -------------------------
-    # Step 2: Monte Carlo simulation (daily)
-    # -------------------------
     simulated_paths = np.zeros((days_ahead, sims))
 
     for i in range(sims):
@@ -292,33 +286,28 @@ def run_monte_carlo_simulation(start_portolio_value, twr_series, monthly_deposit
         for day in range(days_ahead):
             r = np.random.choice(daily_returns)
             new_val = vals[-1] * (1 + r)
-            # Add cash flow only on every ~21st trading day
             if (day + 1) % 21 == 0:
                 new_val += (monthly_deposit - monthly_withdrawal)
             vals.append(new_val)
         simulated_paths[:, i] = vals[1:]
 
-    # -------------------------
-    # Step 3: Calculate percentiles
-    # -------------------------
     percentiles = [5, 25, 50, 75, 95]
     projections = {p: np.percentile(simulated_paths, p, axis=1)
                    for p in percentiles}
 
-    # -------------------------
-    # Step 4: Baseline (no returns, only deposits/withdrawals)
-    # -------------------------
     baseline = [start_portolio_value]
     for day in range(days_ahead):
         new_val = baseline[-1]
         if (day + 1) % 21 == 0:
             new_val += (monthly_deposit - monthly_withdrawal)
         baseline.append(new_val)
-    baseline = baseline[1:]  # drop initial value
+    baseline = baseline[1:]
 
-    # -------------------------
-    # Step 5: Build response
-    # -------------------------
+    success_probability = None
+    if target_value:
+        success_count = np.sum(np.any(simulated_paths >= target_value, axis=0))
+        success_probability = round((success_count / sims) * 100, 2)
+
     last_date = pd.to_datetime(twr_series[-1]['date'], format='%Y%m%d')
     future_dates = [last_date +
                     pd.Timedelta(days=i + 1) for i in range(days_ahead)]
@@ -335,7 +324,11 @@ def run_monte_carlo_simulation(start_portolio_value, twr_series, monthly_deposit
                 "baseline": round(baseline[i], 2),
             }
             for i in range(days_ahead)
-        ]
+        ],
+        "goalAchievement": {
+            "targetValue": target_value,
+            "successProbability": success_probability
+        } if target_value else None
     }
 
     return response
