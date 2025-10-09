@@ -1,0 +1,44 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      target: prod
+    container_name: dashboard-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./.env
+    volumes:
+      - ./backend/app/db/db.sqlite3:/app/app/db/db.sqlite3
+    networks:
+      - dashboard-net
+
+  frontend:
+    build:
+      context: ./frontend
+      target: prod
+    container_name: dashboard-frontend
+    volumes:
+      - frontend_dist:/app/dist
+    networks:
+      - dashboard-net
+
+  nginx:
+    image: nginx:1.25
+    container_name: dashboard-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      - frontend_dist:/usr/share/nginx/html
+    depends_on:
+      - frontend
+    networks:
+      - dashboard-net
+
+networks:
+  dashboard-net:
+    driver: bridge
+
+volumes:
+  frontend_dist:

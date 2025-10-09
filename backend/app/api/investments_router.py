@@ -1,6 +1,7 @@
-from typing import List, Optional
+from typing import Optional
 from fastapi import APIRouter, BackgroundTasks, Query
-from pydantic import BaseModel
+
+from ..schemas.investments_schema import MonteCarloRequest
 from ..services.investments_service import request_full_period, run_monte_carlo_simulation
 from uuid import uuid4
 
@@ -30,16 +31,6 @@ def monte_carlo_task(job_id, start_value, twr_series, monthly_deposit, monthly_w
         target_value=target_value
     )
     jobs[job_id] = result
-
-
-class MonteCarloRequest(BaseModel):
-    start_value: float
-    twr_series: List[dict]
-    monthly_deposit: float = 200
-    monthly_withdrawal: float = 0
-    days_ahead: int = 100
-    sims: int = 5000
-    target_value: float | None = None
 
 
 @router.post("/monte-carlo-simulations")

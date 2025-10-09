@@ -1,25 +1,36 @@
 services:
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      target: dev
     container_name: dashboard-backend
     ports:
       - "8000:8000"
     env_file:
       - ./.env
     volumes:
+      - ./backend/app:/app/app
       - ./backend/app/db/db.sqlite3:/app/app/db/db.sqlite3
     networks:
       - dashboard-net
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      target: dev
     container_name: dashboard-frontend
     ports:
       - "5173:5173"
-    networks:
-      - dashboard-net
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
     depends_on:
       - backend
+    networks:
+      - dashboard-net
 
   nginx:
     image: nginx:1.25
@@ -27,7 +38,7 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx.dev.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - frontend
       - backend
