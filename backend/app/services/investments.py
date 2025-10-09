@@ -1,19 +1,20 @@
 from datetime import datetime
 from datetime import datetime, timedelta
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 import aiohttp
 import numpy as np
 import pandas as pd
 import xmltodict
 import asyncio
 
+from ..utils.formatting import iso_to_yyyymmdd, yyyymmdd_to_iso
 from ..constants.investments import ACCOUNT_INCEPTION, BASE_URL, DATE_FMT, FLEX_VERSION
 
 
 async def request_full_period(start_date: str, end_date: str):
     if not start_date and not end_date:
-        return
+        return None
 
     start = max(
         datetime.strptime(start_date, DATE_FMT),
@@ -56,9 +57,9 @@ async def request_financial_data(start_date, end_date):
 
     send_params = {"t": token, "q": query_id, "v": FLEX_VERSION}
     if start_date:
-        send_params["fd"] = start_date.replace("-", "")
+        send_params["fd"] = iso_to_yyyymmdd(start_date)
     if end_date:
-        send_params["td"] = end_date.replace("-", "")
+        send_params["td"] = iso_to_yyyymmdd(end_date)
 
     headers = {"User-Agent": "Python/3.10"}
 
@@ -111,12 +112,16 @@ def type_converter(path, key, value):
 def build_final_report(all_reports: List[Dict[str, Any]]) -> Dict[str, Any]:
     response = {
         "reports": len(all_reports),
-        "fromDate": all_reports[0]["FlexQueryResponse"]["FlexStatements"][
-            "FlexStatement"
-        ]["@fromDate"],
-        "toDate": all_reports[-1]["FlexQueryResponse"]["FlexStatements"][
-            "FlexStatement"
-        ]["@toDate"],
+        "fromDate": yyyymmdd_to_iso(
+            all_reports[0]["FlexQueryResponse"]["FlexStatements"]["FlexStatement"][
+                "@fromDate"
+            ]
+        ),
+        "toDate": yyyymmdd_to_iso(
+            all_reports[-1]["FlexQueryResponse"]["FlexStatements"]["FlexStatement"][
+                "@toDate"
+            ]
+        ),
         "account": {"currency": None, "type": None, "id": None},
         "valueOverTime": [],
         "cashReport": {
@@ -184,7 +189,7 @@ def build_final_report(all_reports: List[Dict[str, Any]]) -> Dict[str, Any]:
                 {
                     "amount": s["@amount"],
                     "symbol": s["@symbol"],
-                    "date": s["@date"],
+                    "date": yyyymmdd_to_iso(s["@date"]),
                     "activityCode": s["@activityCode"],
                     "activityDescription": s["@activityDescription"],
                 }
@@ -194,7 +199,7 @@ def build_final_report(all_reports: List[Dict[str, Any]]) -> Dict[str, Any]:
         for t in statement_trades:
             response["trades"].append(
                 {
-                    "date": t["@tradeDate"],
+                    "date": yyyymmdd_to_iso(t["@tradeDate"]),
                     "quantity": t["@quantity"],
                     "tradePrice": t["@tradePrice"],
                     "ibCommission": t["@ibCommission"],
@@ -208,7 +213,7 @@ def build_final_report(all_reports: List[Dict[str, Any]]) -> Dict[str, Any]:
         for c in statement_cash_transaction:
             response["cashTransactions"].append(
                 {
-                    "date": c["@dateTime"],
+                    "date": yyyymmdd_to_iso(c["@dateTime"]),
                     "amount": c["@amount"],
                     "type": c["@type"],
                     "fxRateToBase": c["@fxRateToBase"],
@@ -220,12 +225,18 @@ def build_final_report(all_reports: List[Dict[str, Any]]) -> Dict[str, Any]:
         ]
         for e in statement_equity:
             response["valueOverTime"].append(
-                {"date": e["@reportDate"], "cash": e["@cash"], "total": e["@total"]}
+                {
+                    "date": yyyymmdd_to_iso(e["@reportDate"]),
+                    "cash": e["@cash"],
+                    "total": e["@total"],
+                }
             )
 
-    response["valueOverTime"].sort(key=lambda x: datetime.strptime(x["date"], "%Y%m%d"))
+    response["valueOverTime"].sort(
+        key=lambda x: datetime.strptime(x["date"], "%Y-%m-%d")
+    )
     response["statementFunds"].sort(
-        key=lambda x: datetime.strptime(x["date"], "%Y%m%d")
+        key=lambda x: datetime.strptime(x["date"], "%Y-%m-%d")
     )
 
     response["timeWeightedReturn"] = compute_time_weighted_return(
@@ -288,7 +299,7 @@ def run_monte_carlo_simulation(
 ):
     twr_df = pd.DataFrame(twr_series)
     twr_df["twr"] = twr_df["twr"].astype(float)
-    twr_df["date"] = pd.to_datetime(twr_df["date"], format="%Y%m%d")
+    twr_df["date"] = pd.to_datetime(twr_df["date"], format="%Y-%m-%d")
     twr_df.sort_values("date", inplace=True)
 
     twr_df["prev_twr"] = twr_df["twr"].shift(1, fill_value=0)
@@ -325,13 +336,13 @@ def run_monte_carlo_simulation(
         success_count = np.sum(np.any(simulated_paths >= target_value, axis=0))
         success_probability = round((success_count / sims) * 100, 2)
 
-    last_date = pd.to_datetime(twr_series[-1]["date"], format="%Y%m%d")
+    last_date = pd.to_datetime(twr_series[-1]["date"], format="%Y-%m-%d")
     future_dates = [last_date + pd.Timedelta(days=i + 1) for i in range(days_ahead)]
 
     response = {
         "portfolioProjection": [
             {
-                "date": future_dates[i].strftime("%Y%m%d"),
+                "date": future_dates[i].strftime("%Y-%m-%d"),
                 "p5": round(projections[5][i], 2),
                 "p25": round(projections[25][i], 2),
                 "p50": round(projections[50][i], 2),

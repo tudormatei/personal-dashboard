@@ -1,8 +1,14 @@
 from typing import Optional
-from fastapi import APIRouter, BackgroundTasks
+from fastapi import APIRouter, BackgroundTasks, HTTPException, status
 from uuid import uuid4
 
-from ...schemas.investments import MonteCarloRequest
+from ...utils.validation import validate_iso_date
+
+from ...schemas.investments import (
+    FinancialReport,
+    MonteCarloRequest,
+    MonteCarloResponse,
+)
 from ...services.investments import (
     request_full_period,
     run_monte_carlo_simulation,
@@ -16,7 +22,10 @@ jobs = {}
 @router.get("/")
 async def get_financial_data(
     start_date: Optional[str] = None, end_date: Optional[str] = None
-):
+) -> FinancialReport | None:
+    validate_iso_date(start_date, "start_date")
+    validate_iso_date(end_date, "end_date")
+
     return await request_full_period(start_date, end_date)
 
 
@@ -42,10 +51,10 @@ def monte_carlo_task(
     jobs[job_id] = result
 
 
-@router.post("/monte-carlo-simulations")
+@router.post("/monte-carlo-simulations", status_code=status.HTTP_202_ACCEPTED)
 async def start_monte_carlo_simulation(
     request: MonteCarloRequest, background_tasks: BackgroundTasks
-):
+) -> MonteCarloResponse:
     job_id = str(uuid4())
     jobs[job_id] = None
 
@@ -65,8 +74,13 @@ async def start_monte_carlo_simulation(
 
 
 @router.get("/monte-carlo-simulations/{job_id}")
-async def get_monte_carlo_simulation_result(job_id: str):
+async def get_monte_carlo_simulation_result(job_id: str) -> MonteCarloResponse:
+    if job_id not in jobs:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Job ID not found"
+        )
+
     result = jobs.get(job_id)
     if result is None:
-        return {"status": "running"}
-    return {"status": "finished", "result": result}
+        return {"job_id": job_id, "status": "running"}
+    return {"job_id": job_id, "status": "finished", "result": result}
