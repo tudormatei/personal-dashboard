@@ -16,14 +16,14 @@ class WeightResponse(BaseModel):
 
 
 class MaintenanceEstimate(BaseModel):
-    estimated_maintenance_calories: Optional[int]
-    kg_per_day: Optional[float]
-    kg_per_week: Optional[float]
-    kg_per_month: Optional[float]
-    avg_daily_calories: Optional[int]
-    pred_start_weight: Optional[float]
-    pred_end_weight: Optional[float]
-    total_weight_change: Optional[float]
+    estimated_maintenance_calories: int
+    kg_per_day: float
+    kg_per_week: float
+    kg_per_month: float
+    avg_daily_calories: int
+    pred_start_weight: float
+    pred_end_weight: float
+    total_weight_change: float
     days_used: int
 
 

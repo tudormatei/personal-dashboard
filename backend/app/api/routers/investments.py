@@ -3,7 +3,6 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException, status
 from uuid import uuid4
 
 from ...utils.validation import validate_iso_date
-
 from ...schemas.investments import (
     FinancialReport,
     MonteCarloRequest,

@@ -5,16 +5,16 @@ from datetime import date
 
 
 class AccountInfo(BaseModel):
-    currency: Optional[str] = None
-    type: Optional[str] = None
-    id: Optional[str] = None
+    currency: str
+    type: str
+    id: str
 
 
 class CashReport(BaseModel):
-    starting: Optional[float] = None
-    ending: Optional[float] = None
-    deposits: Optional[float] = None
-    withdrawals: Optional[float] = None
+    starting: float
+    ending: float
+    deposits: float
+    withdrawals: float
 
 
 class ValueOverTimePoint(BaseModel):
@@ -27,14 +27,14 @@ class StatementFund(BaseModel):
     amount: float
     symbol: str
     date: date
-    activityCode: Optional[str] = None
-    activityDescription: Optional[str] = None
+    activityCode: str
+    activityDescription: str
 
 
 class OpenPosition(BaseModel):
     currency: str
     symbol: str
-    description: Optional[str] = None
+    description: str
     position: float
     markPrice: float
     positionValue: float
@@ -107,17 +107,12 @@ class PortfolioProjectionPoint(BaseModel):
 
 class GoalAchievement(BaseModel):
     targetValue: float
-    successProbability: Optional[float] = None
+    successProbability: float
 
 
 class MonteCarloResult(BaseModel):
     portfolioProjection: List[PortfolioProjectionPoint]
-    goalAchievement: Optional[GoalAchievement] = None
-
-
-class MonteCarloResult(BaseModel):
-    portfolioProjection: List[PortfolioProjectionPoint]
-    goalAchievement: Optional[GoalAchievement] = None
+    goalAchievement: GoalAchievement | None
 
 
 class MonteCarloResponse(BaseModel):
