@@ -46,7 +46,7 @@ const Upload = (): JSX.Element => {
 
       if (res.ok) {
         setAlert({
-          text: data.message || "Upload successful!",
+          text: `Upload successful. Imported ${data} records.`,
           type: "success",
         });
       } else {

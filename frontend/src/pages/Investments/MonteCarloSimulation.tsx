@@ -76,7 +76,7 @@ const MonteCarloSimulation = ({
     setError(null);
     setData(null);
     try {
-      const res = await fetch("/api/monte-carlo-simulations", {
+      const res = await fetch("/api/investments/monte-carlo-simulations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -93,7 +93,9 @@ const MonteCarloSimulation = ({
       const job = await res.json();
 
       const poll = async () => {
-        const r = await fetch(`/api/monte-carlo-simulations/${job.job_id}`);
+        const r = await fetch(
+          `/api/investments/monte-carlo-simulations/${job.job_id}`
+        );
         const result = await r.json();
         if (result.status === "finished") {
           setData(result.result);

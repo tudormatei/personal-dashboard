@@ -35,13 +35,14 @@ const Macros = (): JSX.Element => {
   const fetchData = async (startDate: string, endDate: string) => {
     setLoading(true);
     setError(null);
+    setMacrosData(null);
 
     try {
       const params = new URLSearchParams({
         start_date: startDate,
         end_date: endDate,
       });
-      const macrosRes = await fetch(`/api/macros?${params.toString()}`);
+      const macrosRes = await fetch(`/api/health/macros?${params.toString()}`);
       const macrosJson: MacrosData = await macrosRes.json();
       setMacrosData(macrosJson);
     } catch {

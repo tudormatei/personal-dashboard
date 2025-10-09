@@ -1,42 +1,50 @@
 from typing import Optional
-from fastapi import APIRouter, BackgroundTasks, Query
-
-from ..schemas.investments_schema import MonteCarloRequest
-from ..services.investments_service import request_full_period, run_monte_carlo_simulation
+from fastapi import APIRouter, BackgroundTasks
 from uuid import uuid4
 
-router = APIRouter()
+from ...schemas.investments import MonteCarloRequest
+from ...services.investments import (
+    request_full_period,
+    run_monte_carlo_simulation,
+)
+
+router = APIRouter(prefix="/investments")
 
 jobs = {}
 
 
-@router.get("/investments")
+@router.get("/")
 async def get_financial_data(
-    start_date: Optional[str] = Query(
-        None, description="ISO date e.g. 2024-01-01"),
-    end_date: Optional[str] = Query(
-        None, description="ISO date e.g. 2024-12-31")
+    start_date: Optional[str] = None, end_date: Optional[str] = None
 ):
     return await request_full_period(start_date, end_date)
 
 
-def monte_carlo_task(job_id, start_value, twr_series, monthly_deposit, monthly_withdrawal,
-                     days_ahead, sims, target_value):
+def monte_carlo_task(
+    job_id,
+    start_value,
+    twr_series,
+    monthly_deposit,
+    monthly_withdrawal,
+    days_ahead,
+    sims,
+    target_value,
+):
     result = run_monte_carlo_simulation(
-        start_value, twr_series,
+        start_value,
+        twr_series,
         monthly_deposit=monthly_deposit,
         monthly_withdrawal=monthly_withdrawal,
         days_ahead=days_ahead,
         sims=sims,
-        target_value=target_value
+        target_value=target_value,
     )
     jobs[job_id] = result
 
 
 @router.post("/monte-carlo-simulations")
-async def start_monte_carlo(
-    request: MonteCarloRequest,
-    background_tasks: BackgroundTasks
+async def start_monte_carlo_simulation(
+    request: MonteCarloRequest, background_tasks: BackgroundTasks
 ):
     job_id = str(uuid4())
     jobs[job_id] = None
@@ -50,14 +58,14 @@ async def start_monte_carlo(
         request.monthly_withdrawal,
         request.days_ahead,
         request.sims,
-        request.target_value
+        request.target_value,
     )
 
     return {"job_id": job_id, "status": "running"}
 
 
 @router.get("/monte-carlo-simulations/{job_id}")
-async def get_monte_carlo_result(job_id: str):
+async def get_monte_carlo_simulation_result(job_id: str):
     result = jobs.get(job_id)
     if result is None:
         return {"status": "running"}

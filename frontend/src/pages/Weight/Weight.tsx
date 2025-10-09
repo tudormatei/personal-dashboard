@@ -36,10 +36,10 @@ const Weight = (): JSX.Element => {
         end_date: endDate,
       });
 
-      const url = `/api/weight?${params.toString()}`;
+      const url = `/api/health/weight?${params.toString()}`;
       const res = await fetch(url);
       const maintenanceRes = await fetch(
-        `/api/maintenance?${params.toString()}`
+        `/api/health/maintenance?${params.toString()}`
       );
 
       const json: WeightRecord[] = await res.json();

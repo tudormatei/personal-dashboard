@@ -1,6 +1,6 @@
 import sqlite3
 from pathlib import Path
-from ..models.models import HealthRecord, WorkoutSession
+from ..models.health import HealthRecord, WorkoutSession
 
 DB_PATH = Path(__file__).parent.parent / "db" / "db.sqlite3"
 
@@ -8,16 +8,19 @@ DB_PATH = Path(__file__).parent.parent / "db" / "db.sqlite3"
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
-    cur.execute("""
+    cur.execute(
+        """
         CREATE TABLE IF NOT EXISTS health_records (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             type TEXT,
             date TEXT,
             value REAL
         )
-    """)
+    """
+    )
 
-    cur.execute("""
+    cur.execute(
+        """
         CREATE TABLE IF NOT EXISTS workouts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             type TEXT NOT NULL,
@@ -25,7 +28,8 @@ def init_db():
             end TEXT NOT NULL,
             duration_min REAL NOT NULL
         )
-    """)
+    """
+    )
     conn.commit()
     conn.close()
 
@@ -39,7 +43,7 @@ def insert_records(records: list[HealthRecord]):
 
     cur.executemany(
         "INSERT INTO health_records (type, date, value) VALUES (?, ?, ?)",
-        [(r.type, r.date.isoformat(), r.value) for r in records]
+        [(r.type, r.date.isoformat(), r.value) for r in records],
     )
     conn.commit()
     conn.close()
@@ -52,14 +56,18 @@ def insert_workouts(workouts: list[WorkoutSession]):
     cur.execute("DELETE FROM sqlite_sequence WHERE name='workouts'")
     cur.executemany(
         "INSERT INTO workouts (type, start, end, duration_min) VALUES (?, ?, ?, ?)",
-        [(w.type, w.start.isoformat(), w.end.isoformat(),
-          w.duration_min) for w in workouts]
+        [
+            (w.type, w.start.isoformat(), w.end.isoformat(), w.duration_min)
+            for w in workouts
+        ],
     )
     conn.commit()
     conn.close()
 
 
-def fetch_records(record_type: str = None, start_date: str = None, end_date: str = None):
+def fetch_records(
+    record_type: str = None, start_date: str = None, end_date: str = None
+):
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
     query = "SELECT type, date, value FROM health_records WHERE 1=1"
@@ -81,7 +89,9 @@ def fetch_records(record_type: str = None, start_date: str = None, end_date: str
     return [{"type": r[0], "date": r[1], "value": r[2]} for r in rows]
 
 
-def fetch_workouts(record_type: str = None, start_date: str = None, end_date: str = None):
+def fetch_workouts(
+    record_type: str = None, start_date: str = None, end_date: str = None
+):
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
     query = "SELECT type, start, end, duration_min FROM workouts WHERE 1=1"
@@ -102,6 +112,5 @@ def fetch_workouts(record_type: str = None, start_date: str = None, end_date: st
     conn.close()
 
     return [
-        {"type": r[0], "start": r[1], "end": r[2], "duration_min": r[3]}
-        for r in rows
+        {"type": r[0], "start": r[1], "end": r[2], "duration_min": r[3]} for r in rows
     ]

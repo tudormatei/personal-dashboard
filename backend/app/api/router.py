@@ -1,8 +1,9 @@
 from fastapi import APIRouter
-from . import health_router
-from . import investments_router
+
+from .routers import health
+from .routers import investments
 
 api_router = APIRouter()
 
-api_router.include_router(health_router.router, tags=["health"])
-api_router.include_router(investments_router.router, tags=["investments"])
+api_router.include_router(health.router, tags=["health"])
+api_router.include_router(investments.router, tags=["investments"])

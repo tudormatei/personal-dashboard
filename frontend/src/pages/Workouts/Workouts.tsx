@@ -96,7 +96,7 @@ const Workouts = () => {
         start_date: startDate,
         end_date: endDate,
       });
-      const url = `/api/workouts?${params.toString()}`;
+      const url = `/api/health/workouts?${params.toString()}`;
       const res = await fetch(url);
       const json: WorkoutStat = await res.json();
       setData(json);
@@ -108,12 +108,9 @@ const Workouts = () => {
     }
   };
 
-  const weekdayData = data
-    ? Object.entries(data.sessions_per_weekday).map(([day, count]) => ({
-        day,
-        count,
-      }))
-    : [];
+  const weekdayData = Object.entries(data?.sessions_per_weekday ?? {}).map(
+    ([day, count]) => ({ day, count })
+  );
 
   const monthlyStats = groupByMonth(data?.daily_stats ?? []);
 
