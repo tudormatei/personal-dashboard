@@ -29,12 +29,12 @@ export const formatNumber = (
   num: number | undefined | null,
   round = false
 ): string => {
-  if (!num) return "";
+  if (!num) return "0";
 
   if (round) {
     num = parseFloat(num.toFixed(2));
 
-    if (!num) return "";
+    if (!num) return "0";
   }
 
   return num.toLocaleString("en-US");

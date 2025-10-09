@@ -17,7 +17,7 @@ export const StyledButton = styled.button<StyledButtonProps>`
   justify-content: center;
   align-items: center;
   gap: ${spacing.sm};
-  padding: ${spacing.sm} ${spacing.lg};
+  padding: ${spacing.sm} ${spacing.xl};
   font-weight: 600;
   border-radius: ${radii.full};
   cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};

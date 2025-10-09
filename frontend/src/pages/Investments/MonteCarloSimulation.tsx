@@ -14,9 +14,17 @@ import Loader from "../../components/Loader/Loader";
 import Alert from "../../components/Alert/Alert";
 import Card from "../../components/Card/Card";
 import type { TWRPoint } from "../../types/types";
-import { colors, radii, spacing } from "../../constants/styling";
+import { colors, radii, spacing, typography } from "../../constants/styling";
 import { formatDateReadable, formatNumber } from "../../utils/utils";
-import { InfoContainer } from "./Investments.styled";
+import {
+  DashboardGrid,
+  Field,
+  FormContainer,
+  InfoContainer,
+} from "./Investments.styled";
+import Label from "../../components/Label/Label";
+import Input from "../../components/Input/Input";
+import Button from "../../components/Button/Button";
 
 type PortfolioProjection = {
   date: string;
@@ -39,11 +47,13 @@ type MonteCarloProjectionResponse = {
 type MonteCarloSimulationProps = {
   startValue: number;
   twrSeries: TWRPoint[];
+  currency: string;
 };
 
 const MonteCarloSimulation = ({
   startValue,
   twrSeries,
+  currency,
 }: MonteCarloSimulationProps) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -103,69 +113,82 @@ const MonteCarloSimulation = ({
     <InfoContainer width="100%">
       <h2>Monte Carlo Simulation</h2>
 
-      <div>
-        <div>
-          <label>Monthly Deposit ($)</label>
-          <input
-            type="number"
+      <FormContainer>
+        <Field>
+          <Label>{`Monthly Deposit ${currency}`}</Label>
+          <Input
             value={params.monthlyDeposit}
             onChange={(e) =>
               handleChange("monthlyDeposit", Number(e.target.value))
             }
           />
-        </div>
-        <div>
-          <label>Monthly Withdrawal ($)</label>
-          <input
-            type="number"
+        </Field>
+        <Field>
+          <Label>{`Monthly Withdrawal ${currency}`}</Label>
+          <Input
             value={params.monthlyWithdrawal}
             onChange={(e) =>
               handleChange("monthlyWithdrawal", Number(e.target.value))
             }
           />
-        </div>
-        <div>
-          <label>Days Ahead</label>
-          <input
-            type="number"
+        </Field>
+        <Field>
+          <Label>Days Ahead</Label>
+          <Input
             value={params.daysAhead}
             onChange={(e) => handleChange("daysAhead", Number(e.target.value))}
           />
-        </div>
-        <div>
-          <label>Simulations</label>
-          <input
-            type="number"
+        </Field>
+        <Field>
+          <Label>Simulations</Label>
+          <Input
             value={params.sims}
             onChange={(e) => handleChange("sims", Number(e.target.value))}
           />
-        </div>
-        <div>
-          <label>Target Portfolio Value (optional)</label>
-          <input
-            type="number"
+        </Field>
+        <Field>
+          <Label>Target Value (optional)</Label>
+          <Input
             value={params.targetValue ?? ""}
             onChange={(e) =>
               handleChange("targetValue", Number(e.target.value))
             }
           />
-        </div>
-        <div className="flex items-end">
-          <button onClick={startSimulation} disabled={loading}>
+        </Field>
+        <Field>
+          <Button onClick={startSimulation} disabled={loading}>
             {loading ? "Running..." : "Start Simulation"}
-          </button>
-        </div>
+          </Button>
+        </Field>
+      </FormContainer>
+
+      <div style={{ marginBottom: `${spacing.md}` }}>
+        <DashboardGrid>
+          <Card
+            title="Baseline Start Value"
+            value={`${formatNumber(startValue)} ${currency}`}
+          />
+          {data?.portfolioProjection && (
+            <>
+              <Card
+                title="Baseline End Value"
+                value={`${formatNumber(
+                  data?.portfolioProjection.at(-1)?.baseline
+                )} ${currency}`}
+              />
+              {data?.goalAchievement && (
+                <Card
+                  title={`Probability of reaching target`}
+                  value={`${data.goalAchievement.successProbability}%`}
+                />
+              )}
+            </>
+          )}
+        </DashboardGrid>
       </div>
 
       {error && <Alert text={error} type="error" />}
       {loading && <Loader text="Simulating future portfolio..." />}
-
-      {data?.goalAchievement && (
-        <Card
-          title={`Probability of reaching $${data.goalAchievement.targetValue}`}
-          value={`${data.goalAchievement.successProbability}%`}
-        />
-      )}
 
       {data?.portfolioProjection && (
         <ResponsiveContainer width="100%" height={400}>
@@ -189,6 +212,7 @@ const MonteCarloSimulation = ({
                 fill: colors.charts.axis,
                 style: { fontSize: "0.8rem" },
               }}
+              tickFormatter={(value) => `${formatNumber(value)}`}
             />
             <Tooltip
               formatter={(value: number) => `$${formatNumber(value)}`}
@@ -253,7 +277,14 @@ const MonteCarloSimulation = ({
             {params.targetValue && (
               <ReferenceLine
                 y={params.targetValue}
-                label="Goal"
+                label={{
+                  value: "Goal",
+                  style: {
+                    color: colors.textPrimary,
+                    fontWeight: typography.fontWeight.bold,
+                    fontSize: typography.fontSize.lg,
+                  },
+                }}
                 stroke={colors.charts.profit}
                 strokeDasharray="3 3"
               />

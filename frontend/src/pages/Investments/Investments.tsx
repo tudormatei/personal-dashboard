@@ -103,7 +103,6 @@ const Investments = (): JSX.Element => {
     : [];
 
   const latestValue = data?.valueOverTime.at(-1)?.total ?? 0;
-  const startValue = data?.valueOverTime.at(0)?.total ?? 0;
   const totalPL = data?.openPositions.reduce(
     (acc, pos) => acc + (pos.positionValue - pos.costBasisMoney),
     0
@@ -144,15 +143,15 @@ const Investments = (): JSX.Element => {
                       <td>{pos.currency}</td>
                       <td>{pos.position}</td>
                       <td>{pos.markPrice}</td>
-                      <td>{pos.positionValue}</td>
-                      <td>{pos.costBasisMoney}</td>
+                      <td>{formatNumber(pos.positionValue)}</td>
+                      <td>{formatNumber(pos.costBasisMoney)}</td>
                       <td
                         style={{
                           color:
                             pl >= 0 ? colors.charts.profit : colors.charts.loss,
                         }}
                       >
-                        {pl.toFixed(2)}
+                        {formatNumber(pl, true)}
                       </td>
                       <td>{pos.percentOfNAV}%</td>
                     </tr>
@@ -237,7 +236,9 @@ const Investments = (): JSX.Element => {
               )}
               <Card
                 title="Buying Power"
-                value={`${data.cashReport.ending} ${data.account.currency}`}
+                value={`${formatNumber(data.cashReport.ending)} ${
+                  data.account.currency
+                }`}
               />
             </DashboardGrid>
           </InfoContainer>
@@ -381,6 +382,7 @@ const Investments = (): JSX.Element => {
                     fill: colors.charts.axis,
                     style: { fontSize: "0.8rem" },
                   }}
+                  tickFormatter={(value) => `${formatNumber(value)}`}
                 />
                 <Tooltip
                   formatter={(value: number) => `$${formatNumber(value)}`}
@@ -423,8 +425,9 @@ const Investments = (): JSX.Element => {
           {data && (
             <>
               <MonteCarloSimulation
-                startValue={startValue}
+                startValue={latestValue}
                 twrSeries={data.timeWeightedReturn.series}
+                currency={data.account.currency ?? "USD"}
               />
             </>
           )}
@@ -451,7 +454,7 @@ const Investments = (): JSX.Element => {
                               : colors.charts.loss,
                         }}
                       >
-                        {t.amount}
+                        {formatNumber(t.amount)}
                       </td>
                       <td>{t.fxRateToBase}</td>
                     </tr>
@@ -521,9 +524,10 @@ const Investments = (): JSX.Element => {
                     fill: colors.charts.axis,
                     style: { fontSize: "0.8rem" },
                   }}
+                  tickFormatter={(value) => `${formatNumber(value)}`}
                 />
                 <Tooltip
-                  formatter={(value: number) => `$${value.toFixed(2)}`}
+                  formatter={(value: number) => `$${formatNumber(value)}`}
                   contentStyle={{
                     backgroundColor: colors.charts.tooltipBg,
                     border: `1px solid ${colors.charts.tooltipBg}`,

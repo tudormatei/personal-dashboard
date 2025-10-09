@@ -35,6 +35,7 @@ export const Logo = styled.div`
   font-weight: ${typography.fontWeight.bold};
   color: ${colors.accent};
   text-shadow: ${shadows.accent};
+  text-decoration: none;
 `;
 
 type SidebarItemProps = {
