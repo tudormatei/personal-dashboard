@@ -1,9 +1,11 @@
 import styled from "@emotion/styled";
 import { colors, radii, spacing, typography } from "../../constants/styling";
 
-export const TableScroll = styled.div<{
+type TableScrollProps = {
   scrollable?: boolean;
-}>`
+};
+
+export const TableScroll = styled.div<TableScrollProps>`
   overflow-y: ${({ scrollable }) => (scrollable ? "auto" : "hidden")};
   max-height: ${({ scrollable }) => (scrollable ? "400px" : "none")};
 
@@ -31,7 +33,11 @@ export const TableScroll = styled.div<{
   scrollbar-color: ${colors.surfaceAlt} ${colors.background};
 `;
 
-export const StyledTable = styled.table<{ minHeight: string | undefined }>`
+type StyledTableProps = {
+  minHeight?: string;
+};
+
+export const StyledTable = styled.table<StyledTableProps>`
   min-height: ${({ minHeight }) => (minHeight ? minHeight : "auto")};
   width: 100%;
   border-collapse: collapse;

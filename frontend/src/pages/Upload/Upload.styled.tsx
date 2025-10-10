@@ -11,32 +11,11 @@ import {
 export const PageContainer = styled.div`
   height: 100%;
   width: 100%;
-  background: ${colors.background};
   color: ${colors.textPrimary};
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  padding: ${spacing.xxl} ${spacing.lg};
   font-family: ${typography.fontFamily};
-`;
-
-export const Title = styled.h1`
-  font-size: clamp(1.8rem, 3vw, ${typography.fontSize.xxl});
-  margin-bottom: ${spacing.xl};
-  font-weight: ${typography.fontWeight.bold};
-  text-align: center;
-  color: ${colors.textPrimary};
-
-  &::after {
-    content: "";
-    display: block;
-    width: 40px;
-    height: 2px;
-    background: ${colors.accent};
-    margin: ${spacing.sm} auto 0;
-    border-radius: 2px;
-  }
 `;
 
 export const UploadBox = styled.div`
@@ -56,7 +35,7 @@ export const FileInput = styled.input`
   width: 100%;
   padding: ${spacing.md};
   border-radius: ${radii.lg};
-  background: ${colors.surfaceAlt};
+  background: ${colors.surface};
   color: ${colors.textPrimary};
   border: 2px dashed ${colors.textMuted};
   font-size: ${typography.fontSize.base};

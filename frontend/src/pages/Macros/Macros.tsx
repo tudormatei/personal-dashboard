@@ -1,5 +1,4 @@
 import { useState, type JSX } from "react";
-import { Header, DashboardGrid, NutrientContainer } from "./Macros.styled";
 import {
   LineChart,
   Line,
@@ -13,10 +12,13 @@ import {
 import Card from "../../components/Card/Card";
 import FilterBar from "../../components/FilterBar/FilterBar";
 import { colors, radii, spacing } from "../../constants/styling";
-import type { MacrosData, NutrientRecord } from "../../types/types";
 import Loader from "../../components/Loader/Loader";
 import Alert from "../../components/Alert/Alert";
 import { formatDate } from "../../utils/utils";
+import type { components, operations } from "../../types/api-routes";
+import type { AlertData } from "../../types/types";
+import { H2 } from "../../components/Typography/Headings";
+import { DashboardGrid, FlexWrapper } from "../../components/Layout/Layout";
 
 const nutrients = [
   { key: "calories", label: "Calories (kcal)" },
@@ -26,15 +28,19 @@ const nutrients = [
   { key: "fiber", label: "Fiber (g)" },
 ];
 
-const Macros = (): JSX.Element => {
-  const [macrosData, setMacrosData] = useState<MacrosData | null>(null);
+type MacrosData =
+  operations["macros_history_api_health_macros_get"]["responses"][200]["content"]["application/json"];
+type DailyNutrient = components["schemas"]["DailyNutrient"];
 
+const Macros = (): JSX.Element => {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [alert, setAlert] = useState<AlertData | null>(null);
+
+  const [macrosData, setMacrosData] = useState<MacrosData>(null);
 
   const fetchData = async (startDate: string, endDate: string) => {
     setLoading(true);
-    setError(null);
+    setAlert(null);
     setMacrosData(null);
 
     try {
@@ -43,10 +49,10 @@ const Macros = (): JSX.Element => {
         end_date: endDate,
       });
       const macrosRes = await fetch(`/api/health/macros?${params.toString()}`);
-      const macrosJson: MacrosData = await macrosRes.json();
+      const macrosJson = (await macrosRes.json()) as MacrosData;
       setMacrosData(macrosJson);
     } catch {
-      setError("Something went wrong");
+      setAlert({ text: "Something went wrong", type: "error" });
       setMacrosData(null);
     } finally {
       setLoading(false);
@@ -55,13 +61,12 @@ const Macros = (): JSX.Element => {
 
   return (
     <>
-      <Header>Macros Dashboard</Header>
+      <H2>Macros Dashboard</H2>
 
       <FilterBar onFilter={fetchData} />
 
       {loading && <Loader text="Loading macros data..." />}
-
-      {error && <Alert text={error} type="error" />}
+      {alert && <Alert {...alert} />}
 
       {macrosData &&
         nutrients.map((nutrient) => {
@@ -71,7 +76,7 @@ const Macros = (): JSX.Element => {
           if (!data || data.length === 0) return null;
 
           return (
-            <NutrientContainer key={nutrient.key}>
+            <FlexWrapper key={nutrient.key}>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={data}>
                   <CartesianGrid
@@ -121,7 +126,7 @@ const Macros = (): JSX.Element => {
 
                   {["ma7", "ma30", "ma90"].map((ma) => {
                     if (
-                      !data.some((d) => d[ma as keyof NutrientRecord] !== null)
+                      !data.some((d) => d[ma as keyof DailyNutrient] !== null)
                     )
                       return null;
 
@@ -157,7 +162,7 @@ const Macros = (): JSX.Element => {
                   <Card title="Std Dev" value={summary.std_dev} />
                 </DashboardGrid>
               )}
-            </NutrientContainer>
+            </FlexWrapper>
           );
         })}
     </>

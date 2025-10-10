@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
 import { CardContainer, CardTitle, CardValue } from "./Card.styled";
 
-interface CardProps {
+type CardProps = {
   title?: string;
   value?: string | number | ReactNode;
   children?: ReactNode;

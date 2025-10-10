@@ -1,19 +1,15 @@
 import { useState } from "react";
-import type { WorkoutStat } from "../../types/types";
 import FilterBar from "../../components/FilterBar/FilterBar";
 import Loader from "../../components/Loader/Loader";
 import Alert from "../../components/Alert/Alert";
 import Card from "../../components/Card/Card";
 import {
-  DashboardGrid,
-  Header,
   CalendarDay,
   CalendarTimeline,
   MonthContainer,
   CalendarGrid,
   MonthLabel,
   WeekdayHeader,
-  ChartWrapper,
 } from "./Workouts.styled";
 import { colors, radii, spacing } from "../../constants/styling";
 import {
@@ -27,6 +23,13 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import type { AlertData } from "../../types/types";
+import type { operations } from "../../types/api-routes";
+import { H2, SubHeader } from "../../components/Typography/Headings";
+import { DashboardGrid, FlexWrapper } from "../../components/Layout/Layout";
+
+type WorkoutStats =
+  operations["workout_history_api_health_workouts_get"]["responses"][200]["content"]["application/json"];
 
 const groupByMonth = (dailyStats: { date: string; duration: number }[]) => {
   return dailyStats.reduce((acc, stat) => {
@@ -83,13 +86,15 @@ const generateCalendarRange = (
 };
 
 const Workouts = () => {
-  const [data, setData] = useState<WorkoutStat | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [alert, setAlert] = useState<AlertData | null>(null);
+
+  const [data, setData] = useState<WorkoutStats | null>(null);
 
   const fetchData = async (startDate: string, endDate: string) => {
     setLoading(true);
-    setError(null);
+    setAlert(null);
+    setData(null);
 
     try {
       const params = new URLSearchParams({
@@ -98,10 +103,10 @@ const Workouts = () => {
       });
       const url = `/api/health/workouts?${params.toString()}`;
       const res = await fetch(url);
-      const json: WorkoutStat = await res.json();
+      const json = (await res.json()) as WorkoutStats;
       setData(json);
     } catch {
-      setError("Something went wrong");
+      setAlert({ text: "Something went wrong", type: "error" });
       setData(null);
     } finally {
       setLoading(false);
@@ -116,13 +121,12 @@ const Workouts = () => {
 
   return (
     <>
-      <Header>Workout Dashboard</Header>
+      <H2>Workout Dashboard</H2>
 
       <FilterBar onFilter={fetchData} />
 
       {loading && <Loader text="Loading workouts data..." />}
-
-      {error && <Alert text={error} type="error" />}
+      {alert && <Alert {...alert} />}
 
       {data && (
         <>
@@ -196,8 +200,8 @@ const Workouts = () => {
             })}
           </CalendarTimeline>
 
-          <ChartWrapper>
-            <h2>Sessions by Weekday</h2>
+          <FlexWrapper>
+            <SubHeader>Sessions by Weekday</SubHeader>
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={weekdayData}>
                 <CartesianGrid
@@ -228,12 +232,12 @@ const Workouts = () => {
                 <Bar dataKey="count" fill={colors.accent} name="Sessions" />
               </BarChart>
             </ResponsiveContainer>
-          </ChartWrapper>
+          </FlexWrapper>
 
-          <ChartWrapper>
+          <FlexWrapper>
             {Object.keys(data.sessions_per_week || {}).length >= 2 && (
               <>
-                <h2>Sessions per Week</h2>
+                <SubHeader>Sessions per Week</SubHeader>
                 <ResponsiveContainer width="100%" height={250}>
                   <LineChart
                     data={Object.entries(data.sessions_per_week).map(
@@ -276,12 +280,12 @@ const Workouts = () => {
                 </ResponsiveContainer>
               </>
             )}
-          </ChartWrapper>
+          </FlexWrapper>
 
-          <ChartWrapper>
+          <FlexWrapper>
             {Object.keys(data.sessions_per_month || {}).length >= 2 && (
               <>
-                <h2>Sessions per Month</h2>
+                <SubHeader>Sessions per Month</SubHeader>
                 <ResponsiveContainer width="100%" height={250}>
                   <LineChart
                     data={Object.entries(data.sessions_per_month).map(
@@ -324,7 +328,7 @@ const Workouts = () => {
                 </ResponsiveContainer>
               </>
             )}
-          </ChartWrapper>
+          </FlexWrapper>
         </>
       )}
     </>

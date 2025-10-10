@@ -1,18 +1,22 @@
 import { useEffect, useState } from "react";
 import { FiltersWrapper, QuickButtons } from "./FilterBar.styled";
 import Button from "../../components/Button/Button";
+import Label from "../Label/Label";
+import Input from "../Input/Input";
 
-interface FilterBarProps {
+type FilterBarProps = {
   onFilter: (startDate: string, endDate: string) => void;
   defaultRange?: number;
   runOnMount?: boolean;
-}
+};
 
 const FilterBar = ({
   onFilter,
   defaultRange = 30,
   runOnMount = true,
 }: FilterBarProps) => {
+  const [loading, setLoading] = useState(false);
+
   const today = new Date();
   const formatDate = (d: Date) => d.toISOString().split("T")[0];
 
@@ -26,12 +30,21 @@ const FilterBar = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const applyFilter = () => {
-    onFilter(startDate, endDate);
+  const applyFilter = async () => {
+    setLoading(true);
+    await onFilter(startDate, endDate);
+    setLoading(false);
   };
 
-  const quickSet = (days: number) => {
-    const newStart = new Date(today.getTime() - days * 24 * 60 * 60 * 1000);
+  const quickSet = (daysOrDate: number | string) => {
+    let newStart: Date;
+
+    if (typeof daysOrDate === "number") {
+      newStart = new Date(today.getTime() - daysOrDate * 24 * 60 * 60 * 1000);
+    } else {
+      newStart = new Date(daysOrDate);
+    }
+
     setStartDate(formatDate(newStart));
     setEndDate(formatDate(today));
     onFilter(formatDate(newStart), formatDate(today));
@@ -39,21 +52,23 @@ const FilterBar = ({
 
   return (
     <FiltersWrapper>
-      <label>Start:</label>
-      <input
+      <Label>Start:</Label>
+      <Input
         type="date"
         value={startDate}
         onChange={(e) => setStartDate(e.target.value)}
       />
 
-      <label>End:</label>
-      <input
+      <Label>End:</Label>
+      <Input
         type="date"
         value={endDate}
         onChange={(e) => setEndDate(e.target.value)}
       />
 
-      <Button onClick={applyFilter}>Apply</Button>
+      <Button onClick={applyFilter} disabled={loading}>
+        Apply
+      </Button>
 
       <QuickButtons>
         <Button variant="secondary" onClick={() => quickSet(30)}>
@@ -68,7 +83,7 @@ const FilterBar = ({
         <Button variant="secondary" onClick={() => quickSet(365)}>
           1Y
         </Button>
-        <Button variant="secondary" onClick={() => quickSet(20 * 365)}>
+        <Button variant="secondary" onClick={() => quickSet("2005-05-01")}>
           All
         </Button>
       </QuickButtons>

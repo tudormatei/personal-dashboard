@@ -1,24 +1,6 @@
 import styled from "@emotion/styled";
 import { colors, radii, spacing, typography } from "../../constants/styling";
 
-export const Header = styled.h1`
-  font-size: ${typography.fontSize.xl};
-  font-weight: ${typography.fontWeight.bold};
-`;
-
-export const DashboardGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: ${spacing.lg};
-`;
-
-export const ChartWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  gap: ${spacing.md};
-`;
-
 export const CalendarTimeline = styled.div`
   display: flex;
   gap: ${spacing.xl};

@@ -27,7 +27,7 @@ export const StyledInput = styled.input<{
   border: 1px solid ${colors.border};
   border-radius: ${radii.md};
   transition: border 0.3s, box-shadow 0.3s;
-  background-color: ${colors.surface};
+  background-color: ${colors.surfaceAlt};
   color: ${colors.textPrimary};
 
   &:focus {
@@ -47,9 +47,23 @@ export const StyledInput = styled.input<{
     opacity: 1;
   }
 
-  &:not(:disabled) {
-    &:hover {
-      border-color: ${colors.accent};
+  &:not(:disabled):hover {
+    border-color: ${colors.accent};
+  }
+
+  &[type="date"] {
+    font-size: ${typography.fontSize.sm};
+    min-width: 140px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+    &::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+      cursor: pointer;
+      opacity: 0.8;
+      transition: opacity 0.2s ease;
+    }
+    &::-webkit-calendar-picker-indicator:hover {
+      opacity: 1;
     }
   }
 `;

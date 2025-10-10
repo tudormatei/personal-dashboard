@@ -1,7 +1,6 @@
 import { useState, type JSX } from "react";
 import {
   PageContainer,
-  Title,
   UploadBox,
   FileInput,
   HelperText,
@@ -9,14 +8,18 @@ import {
 import Loader from "../../components/Loader/Loader";
 import Alert from "../../components/Alert/Alert";
 import Button from "../../components/Button/Button";
+import type { AlertData } from "../../types/types";
+import type { operations } from "../../types/api-routes";
+import { H1 } from "../../components/Typography/Headings";
+
+type UploadHealthResponse =
+  operations["upload_health_api_health__post"]["responses"][201]["content"]["application/json"];
 
 const Upload = (): JSX.Element => {
-  const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
-  const [alert, setAlert] = useState<{
-    text: string;
-    type: "error" | "success" | "info" | "warning";
-  } | null>(null);
+  const [alert, setAlert] = useState<AlertData | null>(null);
+
+  const [file, setFile] = useState<File | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) setFile(e.target.files[0]);
@@ -42,15 +45,15 @@ const Upload = (): JSX.Element => {
         method: "POST",
         body: formData,
       });
-      const data = await res.json();
 
       if (res.ok) {
+        const data = (await res.json()) as UploadHealthResponse;
         setAlert({
-          text: `Upload successful. Imported ${data} records.`,
+          text: `Upload successful. Imported ${data.imported} records.`,
           type: "success",
         });
       } else {
-        setAlert({ text: data.message || "Upload failed.", type: "error" });
+        setAlert({ text: "Upload failed.", type: "error" });
       }
     } catch {
       setAlert({
@@ -64,16 +67,16 @@ const Upload = (): JSX.Element => {
 
   return (
     <PageContainer>
-      <Title>Upload Apple Health Extract</Title>
+      <H1 center>Upload Apple Health Extract</H1>
       <UploadBox>
         <FileInput type="file" accept=".xml" onChange={handleFileChange} />
-        <Button onClick={handleUpload} disabled={loading} loading={loading}>
-          {loading ? "Uploading..." : "Upload"}
+        <Button onClick={handleUpload} disabled={loading}>
+          Upload
         </Button>
         <HelperText>Only .xml files are supported</HelperText>
 
         {loading && <Loader text="Processing your health data..." />}
-        {alert && <Alert text={alert.text} type={alert.type} />}
+        {alert && <Alert {...alert} />}
       </UploadBox>
     </PageContainer>
   );

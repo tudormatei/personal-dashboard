@@ -3,19 +3,18 @@ import { GiWeight } from "react-icons/gi";
 import { LuDumbbell } from "react-icons/lu";
 import { FaMoneyBillTrendUp } from "react-icons/fa6";
 import {
-  Header,
-  SubHeader,
   Grid,
   SectionCard,
   IconWrapper,
   SectionTitle,
   SectionDesc,
 } from "./Home.styled";
+import { H1, SubHeader } from "../../components/Typography/Headings";
 
 const Home = () => (
   <>
-    <Header>Welcome to Your Personal Dashboard</Header>
-    <SubHeader>
+    <H1 center>Welcome to Your Personal Dashboard</H1>
+    <SubHeader center>
       Explore all features: health, nutrition, fitness, and
       investments—beautifully visualized and easy to use.
     </SubHeader>

@@ -7,21 +7,6 @@ import {
   typography,
 } from "../../constants/styling";
 
-export const Header = styled.h1`
-  font-size: ${typography.fontSize.xxl};
-  font-weight: ${typography.fontWeight.bold};
-  color: ${colors.textPrimary};
-  text-shadow: ${shadows.soft};
-  text-align: center;
-`;
-
-export const SubHeader = styled.h2`
-  font-size: ${typography.fontSize.lg};
-  font-weight: ${typography.fontWeight.medium};
-  color: ${colors.textMuted};
-  text-align: center;
-`;
-
 export const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
@@ -31,13 +16,12 @@ export const Grid = styled.div`
 export const SectionCard = styled.div`
   background: ${colors.surfaceAlt};
   border-radius: ${radii.lg};
-  box-shadow: ${shadows.soft};
   padding: ${spacing.xl};
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   transition: box-shadow 0.2s, border 0.2s;
-  border: 2px solid transparent;
+  border: 2px solid ${colors.surface};
   &:hover {
     box-shadow: ${shadows.medium};
     border: 2px solid ${colors.accent};

@@ -39,7 +39,7 @@ export const StyledButton = styled.button<StyledButtonProps>`
 
   &:hover {
     background: ${({ variant, disabled }) => {
-      if (disabled) return colors.surfaceAlt;
+      if (disabled) return colors.surface;
       return variant === "primary" ? colors.accent : colors.accent + "20";
     }};
     box-shadow: ${({ disabled }) => (disabled ? shadows.none : shadows.soft)};

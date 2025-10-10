@@ -8,7 +8,7 @@ import {
 } from "../../constants/styling";
 
 export const CardContainer = styled.div`
-  background: ${colors.surfaceAlt};
+  background: ${colors.surface};
   padding: ${spacing.md};
   border-radius: ${radii.lg};
   box-shadow: ${shadows.none};

@@ -5,6 +5,7 @@ from ...utils.validation import validate_iso_date, validate_ma_windows
 from ...schemas.health import (
     MaintenanceEstimate,
     NutrientStats,
+    UploadResponse,
     WeightResponse,
     WorkoutStats,
 )
@@ -20,7 +21,7 @@ router = APIRouter(prefix="/health")
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-async def upload_health(file: UploadFile = File(...)):
+async def upload_health(file: UploadFile = File(...)) -> UploadResponse:
     contents = await file.read()
     if not contents:
         raise HTTPException(
@@ -90,7 +91,7 @@ def macros_history(
 
 
 @router.get("/workouts")
-def weight_history(
+def workout_history(
     start_date: Optional[str] = None, end_date: Optional[str] = None
 ) -> WorkoutStats | None:
     validate_iso_date(start_date, "start_date")

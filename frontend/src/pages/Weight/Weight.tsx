@@ -1,5 +1,4 @@
 import { useState, type JSX } from "react";
-import { Header, DashboardGrid } from "./Weight.styled";
 import {
   LineChart,
   Line,
@@ -13,42 +12,54 @@ import {
 import Card from "../../components/Card/Card";
 import FilterBar from "../../components/FilterBar/FilterBar";
 import { colors, radii, spacing } from "../../constants/styling";
-import type { MaintenanceData, WeightRecord } from "../../types/types";
 import Loader from "../../components/Loader/Loader";
 import Alert from "../../components/Alert/Alert";
 import { formatDate } from "../../utils/utils";
+import type { operations } from "../../types/api-routes";
+import type { AlertData } from "../../types/types";
+import { H2 } from "../../components/Typography/Headings";
+import { DashboardGrid, FlexWrapper } from "../../components/Layout/Layout";
+
+type WeightResponse =
+  operations["weight_history_api_health_weight_get"]["responses"][200]["content"]["application/json"];
+
+type MaintenanceEstimate =
+  operations["maintenance_calories_api_health_maintenance_get"]["responses"][200]["content"]["application/json"];
 
 const Weight = (): JSX.Element => {
-  const [weightData, setWeightData] = useState<WeightRecord[] | null>(null);
-  const [maintenanceData, setMaintenanceData] =
-    useState<MaintenanceData | null>(null);
-
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [alert, setAlert] = useState<AlertData | null>(null);
+
+  const [weightData, setWeightData] = useState<WeightResponse>(null);
+  const [maintenanceData, setMaintenanceData] =
+    useState<MaintenanceEstimate>(null);
 
   const fetchWeight = async (startDate: string, endDate: string) => {
     setLoading(true);
-    setError(null);
+    setAlert(null);
+    setWeightData(null);
+    setMaintenanceData(null);
 
     try {
       const params = new URLSearchParams({
         start_date: startDate,
         end_date: endDate,
       });
-
-      const url = `/api/health/weight?${params.toString()}`;
-      const res = await fetch(url);
-      const maintenanceRes = await fetch(
+      const weightResponse = await fetch(
+        `/api/health/weight?${params.toString()}`
+      );
+      const maintenanceResponse = await fetch(
         `/api/health/maintenance?${params.toString()}`
       );
 
-      const json: WeightRecord[] = await res.json();
-      const maintenanceJson: MaintenanceData = await maintenanceRes.json();
+      const weightJson = (await weightResponse.json()) as WeightResponse;
+      const maintenanceJson =
+        (await maintenanceResponse.json()) as MaintenanceEstimate;
 
-      setWeightData(json);
+      setWeightData(weightJson);
       setMaintenanceData(maintenanceJson);
     } catch {
-      setError("Something went wrong");
+      setAlert({ text: "Something went wrong", type: "error" });
       setWeightData(null);
       setMaintenanceData(null);
     } finally {
@@ -58,16 +69,15 @@ const Weight = (): JSX.Element => {
 
   return (
     <>
-      <Header>Weight Dashboard</Header>
+      <H2>Weight Dashboard</H2>
 
       <FilterBar onFilter={fetchWeight} />
 
       {loading && <Loader text="Loading weight data..." />}
-
-      {error && <Alert text={error} type="error" />}
+      {alert && <Alert {...alert} />}
 
       {weightData && weightData.length > 0 && (
-        <>
+        <FlexWrapper>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={weightData}>
               <CartesianGrid
@@ -112,7 +122,9 @@ const Weight = (): JSX.Element => {
               />
               {["ma7", "ma30", "ma90"].map((ma) => {
                 if (
-                  !weightData.some((d) => d[ma as keyof WeightRecord] !== null)
+                  !weightData.some(
+                    (d) => d[ma as keyof WeightResponse] !== null
+                  )
                 )
                   return null;
 
@@ -133,7 +145,7 @@ const Weight = (): JSX.Element => {
               <Legend />
             </LineChart>
           </ResponsiveContainer>
-        </>
+        </FlexWrapper>
       )}
 
       {maintenanceData && (

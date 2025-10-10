@@ -4,13 +4,6 @@ import Loader from "../../components/Loader/Loader";
 import Alert from "../../components/Alert/Alert";
 import Card from "../../components/Card/Card";
 import Table from "../../components/Table/Table";
-import {
-  Header,
-  DashboardGrid,
-  InfoContainer,
-  PositionsContainer,
-  CashContainer,
-} from "./Investments.styled";
 
 import {
   Tooltip,
@@ -27,7 +20,6 @@ import {
   LineChart,
   CartesianGrid,
 } from "recharts";
-import type { InvestmentsData } from "../../types/types";
 import { colors, radii, spacing } from "../../constants/styling";
 import {
   formatDate,
@@ -36,6 +28,10 @@ import {
   formatNumber,
 } from "../../utils/utils";
 import MonteCarloSimulation from "./MonteCarloSimulation";
+import type { operations } from "../../types/api-routes";
+import type { AlertData } from "../../types/types";
+import { H1, SubHeader } from "../../components/Typography/Headings";
+import { DashboardGrid, FlexWrapper } from "../../components/Layout/Layout";
 
 type Fund = {
   date: string;
@@ -48,10 +44,14 @@ type DailyFundSummary = {
   outflow: number;
 };
 
+type FinancialReport =
+  operations["get_financial_data_api_investments__get"]["responses"][200]["content"]["application/json"];
+
 const Investments = (): JSX.Element => {
-  const [data, setData] = useState<InvestmentsData | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [alert, setAlert] = useState<AlertData | null>(null);
+
+  const [data, setData] = useState<FinancialReport | null>(null);
 
   const pieData = data?.openPositions.map((pos) => ({
     name: pos.symbol,
@@ -60,7 +60,9 @@ const Investments = (): JSX.Element => {
 
   const fetchInvestments = async (startDate: string, endDate: string) => {
     setLoading(true);
-    setError(null);
+    setAlert(null);
+    setData(null);
+
     try {
       const params = new URLSearchParams({
         start_date: startDate,
@@ -71,7 +73,7 @@ const Investments = (): JSX.Element => {
       const json = await response.json();
       setData(json);
     } catch {
-      setError("Something went wrong");
+      setAlert({ text: "Something went wrong", type: "error" });
     } finally {
       setLoading(false);
     }
@@ -110,16 +112,17 @@ const Investments = (): JSX.Element => {
 
   return (
     <>
-      <Header>Investment Dashboard</Header>
+      <H1>Investment Dashboard</H1>
       <FilterBar onFilter={fetchInvestments} runOnMount={false} />
+
       {loading && <Loader text="Loading investment data..." />}
-      {error && <Alert text={error} type="error" />}
+      {alert && <Alert {...alert} />}
 
       {data && (
         <>
-          <PositionsContainer>
-            <InfoContainer width="65%">
-              <h2>Open Positions</h2>
+          <FlexWrapper row>
+            <FlexWrapper style={{ width: "65%" }}>
+              <SubHeader>Open Positions</SubHeader>
               <Table
                 headers={[
                   "Symbol",
@@ -158,9 +161,9 @@ const Investments = (): JSX.Element => {
                   );
                 })}
               </Table>
-            </InfoContainer>
+            </FlexWrapper>
 
-            <InfoContainer width="35%">
+            <FlexWrapper style={{ width: "35%" }}>
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
@@ -211,11 +214,11 @@ const Investments = (): JSX.Element => {
                   />
                 </PieChart>
               </ResponsiveContainer>
-            </InfoContainer>
-          </PositionsContainer>
+            </FlexWrapper>
+          </FlexWrapper>
 
-          <InfoContainer>
-            <h2>Current Stats</h2>
+          <FlexWrapper>
+            <SubHeader>Current Stats</SubHeader>
             <DashboardGrid>
               <Card
                 title="Total P/L"
@@ -241,10 +244,10 @@ const Investments = (): JSX.Element => {
                 }`}
               />
             </DashboardGrid>
-          </InfoContainer>
+          </FlexWrapper>
 
-          <InfoContainer>
-            <h2>Period Stats</h2>
+          <FlexWrapper>
+            <SubHeader>Period Stats</SubHeader>
             <DashboardGrid>
               <Card
                 title="Date Range"
@@ -277,10 +280,10 @@ const Investments = (): JSX.Element => {
                 value={`${data.cashReport.withdrawals} ${data.account.currency}`}
               />
             </DashboardGrid>
-          </InfoContainer>
+          </FlexWrapper>
 
-          <InfoContainer width="100%">
-            <h2>Portfolio Growth % Over Time</h2>
+          <FlexWrapper>
+            <SubHeader>Portfolio Growth % Over Time</SubHeader>
             <ResponsiveContainer width="100%" height={400}>
               <LineChart data={data.timeWeightedReturn.series}>
                 <CartesianGrid
@@ -357,10 +360,10 @@ const Investments = (): JSX.Element => {
                 />
               </LineChart>
             </ResponsiveContainer>
-          </InfoContainer>
+          </FlexWrapper>
 
-          <InfoContainer width="100%">
-            <h2>Portfolio Value Over Time</h2>
+          <FlexWrapper>
+            <SubHeader>Portfolio Value Over Time</SubHeader>
             <ResponsiveContainer width="100%" height={400}>
               <LineChart data={data.valueOverTime}>
                 <CartesianGrid
@@ -420,21 +423,21 @@ const Investments = (): JSX.Element => {
                 />
               </LineChart>
             </ResponsiveContainer>
-          </InfoContainer>
+          </FlexWrapper>
 
           {data && (
-            <>
+            <FlexWrapper>
               <MonteCarloSimulation
                 startValue={latestValue}
                 twrSeries={data.timeWeightedReturn.series}
                 currency={data.account.currency ?? "USD"}
               />
-            </>
+            </FlexWrapper>
           )}
 
-          <CashContainer>
-            <InfoContainer width="35%">
-              <h2>Cash Transactions</h2>
+          <FlexWrapper row>
+            <FlexWrapper style={{ width: "35%" }}>
+              <SubHeader>Cash Transactions</SubHeader>
               <Table
                 headers={["Date", "Type", "Amount", "FX Rate"]}
                 scrollable
@@ -460,10 +463,10 @@ const Investments = (): JSX.Element => {
                     </tr>
                   ))}
               </Table>
-            </InfoContainer>
+            </FlexWrapper>
 
-            <InfoContainer width="65%">
-              <h2>Trades</h2>
+            <FlexWrapper style={{ width: "65%" }}>
+              <SubHeader>Trades</SubHeader>
               <Table
                 headers={[
                   "Date",
@@ -499,10 +502,10 @@ const Investments = (): JSX.Element => {
                     </tr>
                   ))}
               </Table>
-            </InfoContainer>
-          </CashContainer>
-          <InfoContainer width="100%">
-            <h2>Daily Cash Flows</h2>
+            </FlexWrapper>
+          </FlexWrapper>
+          <FlexWrapper>
+            <SubHeader>Daily Cash Flows</SubHeader>
             <ResponsiveContainer width="100%" height={400}>
               <BarChart data={fundsData}>
                 <CartesianGrid
@@ -552,7 +555,7 @@ const Investments = (): JSX.Element => {
                 />
               </BarChart>
             </ResponsiveContainer>
-          </InfoContainer>
+          </FlexWrapper>
         </>
       )}
     </>
