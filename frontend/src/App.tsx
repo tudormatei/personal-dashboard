@@ -7,6 +7,7 @@ import Macros from "./pages/Macros/Macros";
 import Workouts from "./pages/Workouts/Workouts";
 import Investments from "./pages/Investments/Investments";
 import Home from "./pages/Home/Home";
+import Wallet from "./pages/Wallet/Wallet";
 
 const App = (): JSX.Element => {
   return (
@@ -19,6 +20,7 @@ const App = (): JSX.Element => {
           <Route path="/macros" element={<Macros />} />
           <Route path="/workouts" element={<Workouts />} />
           <Route path="/investments" element={<Investments />} />
+          <Route path="/wallet" element={<Wallet />} />
         </Routes>
       </AppLayout>
     </BrowserRouter>

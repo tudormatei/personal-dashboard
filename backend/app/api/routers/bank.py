@@ -1,9 +1,9 @@
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, HTTPException, UploadFile, File, status
 
-from ...services.bank import process_bank_files
-
-from ...schemas.bank import UploadResponse
+from ...utils.validation import validate_iso_date
+from ...services.bank import get_bank_transactions, process_bank_files
+from ...schemas.bank import TransactionsResponse, UploadResponse
 
 
 router = APIRouter(prefix="/bank")
@@ -35,3 +35,15 @@ async def upload_bank(files: List[UploadFile] = File(...)) -> UploadResponse:
         )
 
     return await process_bank_files(results)
+
+
+@router.get("/transactions")
+def get_transactions(
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    bank: Optional[str] = None,
+) -> TransactionsResponse | None:
+    validate_iso_date(start_date, "start_date")
+    validate_iso_date(end_date, "end_date")
+
+    return get_bank_transactions(start_date=start_date, end_date=end_date, bank=bank)

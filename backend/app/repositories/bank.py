@@ -15,7 +15,7 @@ def init_bank_table():
             balance REAL,
             type TEXT,
             source_bank TEXT,
-            UNIQUE(date, description, amount, source_bank)
+            UNIQUE(date, description, amount, balance, type, source_bank)
         )
         """
     )
@@ -26,6 +26,7 @@ def init_bank_table():
 def insert_bank_records(df):
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
+    inserted_count = 0
 
     for _, row in df.iterrows():
         cur.execute(
@@ -43,9 +44,12 @@ def insert_bank_records(df):
                 row.get("SourceBank"),
             ),
         )
+        inserted_count += cur.rowcount
 
     conn.commit()
     conn.close()
+
+    return inserted_count
 
 
 def get_bank_records(source_bank=None, start_date=None, end_date=None):

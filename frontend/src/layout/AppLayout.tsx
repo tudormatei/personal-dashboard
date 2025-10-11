@@ -13,7 +13,7 @@ import { LuDumbbell } from "react-icons/lu";
 import { FaMoneyBillTrendUp } from "react-icons/fa6";
 import { IoMdCloudUpload } from "react-icons/io";
 import { FaHome } from "react-icons/fa";
-
+import { FaWallet } from "react-icons/fa6";
 type AppLayoutProps = {
   children: ReactNode;
 };
@@ -43,6 +43,9 @@ const AppLayout: FC<AppLayoutProps> = ({ children }) => {
         <Separator />
         <SidebarItem to="/investments" active={pathname === "/investments"}>
           <FaMoneyBillTrendUp size={22} />
+        </SidebarItem>
+        <SidebarItem to="/wallet" active={pathname === "/wallet"}>
+          <FaWallet size={22} />
         </SidebarItem>
       </Sidebar>
 

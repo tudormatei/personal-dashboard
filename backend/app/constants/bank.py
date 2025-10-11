@@ -8,7 +8,7 @@ EUR_RON_RATE = 5.06
 
 
 class Bank(Enum):
-    ING_RO = "ing_ro"
-    ING_NL = "ing_nl"
+    ING_RON = "ing_ron"
+    ING_EUR = "ing_eur"
     REV_RON = "rev_ron"
     REV_EUR = "rev_eur"

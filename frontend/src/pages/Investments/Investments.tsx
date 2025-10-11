@@ -51,7 +51,7 @@ const Investments = (): JSX.Element => {
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState<AlertData | null>(null);
 
-  const [data, setData] = useState<FinancialReport | null>(null);
+  const [data, setData] = useState<FinancialReport>(null);
 
   const pieData = data?.openPositions.map((pos) => ({
     name: pos.symbol,

@@ -29,7 +29,7 @@ async def upload_health(file: UploadFile = File(...)) -> UploadResponse:
             detail="Uploaded file is empty",
         )
 
-    return await process_health_file(contents)
+    return process_health_file(contents)
 
 
 @router.get("/weight")

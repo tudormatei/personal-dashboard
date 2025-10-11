@@ -4,7 +4,7 @@ import pandas as pd
 import csv
 import os
 
-from ..repositories.bank import insert_bank_records
+from ..repositories.bank import get_bank_records, insert_bank_records
 
 from ..constants.bank import (
     EUR_RON_RATE,
@@ -44,9 +44,9 @@ async def process_bank_files(files: List[dict]):
     cleaned_statements = clean_bank_statements(statements)
     merged_dataframe = merge_bank_statements(cleaned_statements)
 
-    insert_bank_records(merged_dataframe)
+    inserted_rows = insert_bank_records(merged_dataframe)
 
-    return {"imported": len(merged_dataframe)}
+    return {"imported": inserted_rows}
 
 
 def merge_bank_statements(statements):
@@ -60,6 +60,10 @@ def merge_bank_statements(statements):
     merged_df["Date"] = pd.to_datetime(merged_df["Date"], errors="coerce")
 
     merged_df = merged_df.sort_values(by="Date").reset_index(drop=True)
+
+    merged_df["Date"] = pd.to_datetime(merged_df["Date"], errors="coerce").dt.strftime(
+        "%Y-%m-%d"
+    )
 
     return merged_df
 
@@ -111,7 +115,7 @@ def clean_bank_statements(statements):
                     str
                 )
 
-        elif bank == Bank.ING_RO:
+        elif bank == Bank.ING_RON:
             rename_map = {
                 "Data": "Date",
                 "Detalii tranzactie": "Description",
@@ -125,11 +129,14 @@ def clean_bank_statements(statements):
                 )
 
             debit_col, credit_col = "Debit", "Credit"
-            if debit_col in df.columns and credit_col in df.columns:
-                df["Amount"] = df[debit_col].fillna(0) - df[credit_col].fillna(0)
-                df = df.drop(columns=[debit_col, credit_col])
+            df["Amount"] = df.apply(
+                lambda row: (
+                    -row[debit_col] if pd.notna(row[debit_col]) else row[credit_col]
+                ),
+                axis=1,
+            )
 
-        elif bank == Bank.ING_NL:
+        elif bank == Bank.ING_EUR:
             cols_to_drop = ["Account", "Counterparty", "Code", "Tag"]
             df = df.drop(
                 columns=[c for c in cols_to_drop if c in df.columns], errors="ignore"
@@ -210,9 +217,9 @@ def group_bank_statements(dataframes: List[pd.DataFrame]):
     for df in dataframes:
         length_columns = len(df.columns.values)
         if length_columns == NUMBER_INGRO_COLUMNS:
-            statements[Bank.ING_RO] = df
+            statements[Bank.ING_RON] = df
         elif length_columns == NUMBER_INGNL_COLUMNS:
-            statements[Bank.ING_NL] = df
+            statements[Bank.ING_EUR] = df
         elif length_columns == NUMBER_REVOLUT_COLUMNS:
             if df["Currency"].str.upper().eq("EUR").any():
                 statements[Bank.REV_EUR] = df
@@ -220,3 +227,40 @@ def group_bank_statements(dataframes: List[pd.DataFrame]):
                 statements[Bank.REV_RON] = df
 
     return statements
+
+
+def compute_summary(records):
+    df = pd.DataFrame(records)
+    df["amount"] = pd.to_numeric(df["amount"], errors="coerce").fillna(0)
+
+    total_in = df.loc[df["amount"] > 0, "amount"].sum()
+    total_out = df.loc[df["amount"] < 0, "amount"].sum()
+    by_bank = df.groupby("source_bank")["amount"].sum().to_dict()
+
+    return {
+        "total_in": round(total_in, 2),
+        "total_out": round(total_out, 2),
+        "net_balance": round(total_in + total_out, 2),
+        "by_bank": {k: round(v, 2) for k, v in by_bank.items()},
+    }
+
+
+def get_bank_transactions(start_date, end_date, bank):
+    records = get_bank_records(
+        start_date=start_date, end_date=end_date, source_bank=bank
+    )
+    if not records:
+        return None
+
+    summary = compute_summary(records)
+
+    return {
+        "transactions": records,
+        "summary": summary,
+        "meta": {
+            "count": len(records),
+            "start_date": start_date,
+            "end_date": end_date,
+            "bank": bank,
+        },
+    }
