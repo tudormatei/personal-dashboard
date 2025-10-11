@@ -1,11 +1,10 @@
 import sqlite3
-from pathlib import Path
+
+from ..constants.config import DB_PATH
 from ..models.health import HealthRecord, WorkoutSession
 
-DB_PATH = Path(__file__).parent.parent / "db" / "db.sqlite3"
 
-
-def init_db():
+def init_health_tables():
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
     cur.execute(
@@ -34,7 +33,7 @@ def init_db():
     conn.close()
 
 
-def insert_records(records: list[HealthRecord]):
+def insert_health_records(records: list[HealthRecord]):
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
 

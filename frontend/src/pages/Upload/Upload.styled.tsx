@@ -9,12 +9,12 @@ import {
 } from "../../constants/styling";
 
 export const PageContainer = styled.div`
-  height: 100%;
   width: 100%;
   color: ${colors.textPrimary};
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  flex-direction: row;
+  justify-content: center;
+  text-align: center;
   font-family: ${typography.fontFamily};
 `;
 

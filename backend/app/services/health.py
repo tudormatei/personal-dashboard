@@ -17,16 +17,16 @@ from ..constants.health import (
 from ..repositories.health import (
     fetch_records,
     fetch_workouts,
-    insert_records,
+    insert_health_records,
     insert_workouts,
 )
 from ..models.health import HealthRecord, WorkoutSession
 
 
-async def process_health_file(contents: bytes) -> int:
+def process_health_file(contents: bytes) -> int:
     records, workouts = parse_apple_health_xml(io.BytesIO(contents))
 
-    insert_records(records)
+    insert_health_records(records)
     insert_workouts(workouts)
 
     return {"imported": (len(records) + len(workouts))}

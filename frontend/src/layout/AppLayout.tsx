@@ -27,10 +27,10 @@ const AppLayout: FC<AppLayoutProps> = ({ children }) => {
         <SidebarItem to="/" active={pathname === "/"}>
           <FaHome size={22} />
         </SidebarItem>
-        <Separator />
         <SidebarItem to="/upload" active={pathname === "/upload"}>
           <IoMdCloudUpload size={22} />
         </SidebarItem>
+        <Separator />
         <SidebarItem to="/weight" active={pathname === "/weight"}>
           <GiWeight size={22} />
         </SidebarItem>

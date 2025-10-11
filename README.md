@@ -29,6 +29,13 @@ Key goals:
 - **Local Storage**: SQLite database created and managed automatically.
 - **Responsive UI**: Vite + React frontend; charts via Recharts.
 
+### Todo:
+
+- Finance:
+  - Have expense tracker linked to bank account (specifically for rent utilities and groceries)
+- Productivity
+  - Leetcode / study helper + ollama to generate proper insights from notion notes
+
 ---
 
 ### Tech Stack
@@ -37,7 +44,7 @@ Key goals:
 - **Parsing & Analytics**: pandas, numpy, scikit‑learn
 - **Database**: SQLite (file at `backend/app/db/db.sqlite3`)
 - **Frontend**: React + TypeScript + Vite, Recharts, React Router
-- **Containers**: Dockerfiles for backend and frontend
+- **Containers**: Dockerfiles for backend and frontend + Docker Compose
 
 Minimum recommended versions:
 
