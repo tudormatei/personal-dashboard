@@ -1,4 +1,5 @@
 import sqlite3
+
 from ..constants.config import DB_PATH
 
 
@@ -29,22 +30,25 @@ def insert_bank_records(df):
     inserted_count = 0
 
     for _, row in df.iterrows():
-        cur.execute(
-            """
-            INSERT OR IGNORE INTO bank_records
-            (date, description, amount, balance, type, source_bank)
-            VALUES (?, ?, ?, ?, ?, ?)
-            """,
-            (
-                row.get("Date"),
-                row.get("Description"),
-                row.get("Amount"),
-                row.get("Balance"),
-                row.get("Type"),
-                row.get("SourceBank"),
-            ),
-        )
-        inserted_count += cur.rowcount
+        try:
+            cur.execute(
+                """
+                INSERT INTO bank_records
+                (date, description, amount, balance, type, source_bank)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    row.get("Date"),
+                    row.get("Description"),
+                    row.get("Amount"),
+                    row.get("Balance"),
+                    row.get("Type"),
+                    row.get("SourceBank"),
+                ),
+            )
+            inserted_count += 1
+        except sqlite3.IntegrityError:
+            pass
 
     conn.commit()
     conn.close()

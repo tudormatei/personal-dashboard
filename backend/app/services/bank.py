@@ -42,7 +42,11 @@ async def process_bank_files(files: List[dict]):
 
     statements = group_bank_statements(dataframes)
     cleaned_statements = clean_bank_statements(statements)
+    for bank, df in cleaned_statements.items():
+        print(f"Bank statement: {bank} extracted {len(cleaned_statements[bank])} rows")
+
     merged_dataframe = merge_bank_statements(cleaned_statements)
+    print(f"Total merged df length {len(merged_dataframe)}")
 
     inserted_rows = insert_bank_records(merged_dataframe)
 
@@ -64,6 +68,19 @@ def merge_bank_statements(statements):
     merged_df["Date"] = pd.to_datetime(merged_df["Date"], errors="coerce").dt.strftime(
         "%Y-%m-%d"
     )
+
+    if "Type" not in merged_df.columns:
+        merged_df["Type"] = ""
+
+    merged_df = merged_df.fillna("")
+    merged_df["Description"] = merged_df["Description"].astype(str).str.strip()
+    merged_df["Type"] = merged_df["Type"].astype(str).str.strip()
+    merged_df["SourceBank"] = merged_df["SourceBank"].astype(str).str.strip()
+    merged_df["Date"] = pd.to_datetime(merged_df["Date"], errors="coerce").dt.strftime(
+        "%Y-%m-%d"
+    )
+    merged_df["Amount"] = pd.to_numeric(merged_df["Amount"], errors="coerce").round(2)
+    merged_df["Balance"] = pd.to_numeric(merged_df["Balance"], errors="coerce").round(2)
 
     return merged_df
 
@@ -124,9 +141,9 @@ def clean_bank_statements(statements):
             df = df.rename(columns=rename_map)
 
             if "Date" in df.columns:
-                df["Date"] = pd.to_datetime(df["Date"], errors="coerce").dt.date.astype(
-                    str
-                )
+                df["Date"] = pd.to_datetime(df["Date"], errors="coerce").dt.date
+                df = df.dropna(subset=["Date"])
+                df["Date"] = df["Date"].astype(str)
 
             debit_col, credit_col = "Debit", "Credit"
             df["Amount"] = df.apply(
@@ -187,7 +204,7 @@ def clean_bank_statements(statements):
                 )
                 df = df.drop(columns=["Notifications"])
 
-        df = normalize_numeric_columns(df, bank)
+        df = normalize_bank_dataframe(df, bank)
         df["SourceBank"] = bank.name
 
         cleaned[bank] = df
@@ -195,7 +212,7 @@ def clean_bank_statements(statements):
     return cleaned
 
 
-def normalize_numeric_columns(df: pd.DataFrame, bank):
+def normalize_bank_dataframe(df: pd.DataFrame, bank):
     for col in ["Amount", "Balance"]:
         if col in df.columns:
             df[col] = (
