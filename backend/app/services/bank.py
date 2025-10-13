@@ -7,6 +7,7 @@ import os
 from ..repositories.bank import get_bank_records, insert_bank_records
 
 from ..constants.bank import (
+    DESC_IGNORE_KEYWORDS,
     EUR_RON_RATE,
     NUMBER_INGNL_COLUMNS,
     NUMBER_INGRO_COLUMNS,
@@ -45,42 +46,62 @@ async def process_bank_files(files: List[dict]):
     for bank, df in cleaned_statements.items():
         print(f"Bank statement: {bank} extracted {len(cleaned_statements[bank])} rows")
 
+    pd.set_option("display.max_columns", None)
+    for bank, df in cleaned_statements.items():
+        if bank in {Bank.ING_RON}:
+            print(f"\nTail of {bank.name} before merge:")
+            print(df.tail(3))
+
     merged_dataframe = merge_bank_statements(cleaned_statements)
+    for bank in [Bank.ING_RON]:
+        print(f"\nTail of {bank.name} after merge:")
+        print(merged_dataframe[merged_dataframe["SourceBank"] == bank.name].tail(3))
     print(f"Total merged df length {len(merged_dataframe)}")
 
-    inserted_rows = insert_bank_records(merged_dataframe)
+    filtered_dataframe = filter_bank_records(merged_dataframe)
+    for bank in [Bank.ING_RON]:
+        print(f"\nTail of {bank.name} after filter:")
+        print(filtered_dataframe[filtered_dataframe["SourceBank"] == bank.name].tail(3))
+    print(f"Total filtered df length {len(filtered_dataframe)}")
+
+    normalized_dataframe = normalize_bank_dataframe(filtered_dataframe)
+    for bank in [Bank.ING_RON]:
+        print(f"\nTail of {bank.name} after normalizing:")
+        print(
+            normalized_dataframe[normalized_dataframe["SourceBank"] == bank.name].head(
+                3
+            )
+        )
+    print(f"Total normalized df length {len(normalized_dataframe)}")
+
+    inserted_rows = insert_bank_records(normalized_dataframe)
 
     return {"imported": inserted_rows}
 
 
-def merge_bank_statements(statements):
-    merged_dfs = []
+def filter_bank_records(df):
+    ignore_phrases = DESC_IGNORE_KEYWORDS
 
-    for df in statements.values():
-        merged_dfs.append(df)
+    condition = df["Type"].str.lower() != "exchange"
+
+    for phrase in ignore_phrases:
+        words = phrase.lower().split()
+        condition &= (
+            ~df["Description"]
+            .str.lower()
+            .apply(lambda desc: all(word in desc for word in words))
+        )
+
+    return df[condition]
+
+
+def merge_bank_statements(statements):
+    merged_dfs = [df for df in statements.values()]
 
     merged_df = pd.concat(merged_dfs, ignore_index=True, sort=False)
 
-    merged_df["Date"] = pd.to_datetime(merged_df["Date"], errors="coerce")
-
-    merged_df = merged_df.sort_values(by="Date").reset_index(drop=True)
-
-    merged_df["Date"] = pd.to_datetime(merged_df["Date"], errors="coerce").dt.strftime(
-        "%Y-%m-%d"
-    )
-
     if "Type" not in merged_df.columns:
         merged_df["Type"] = ""
-
-    merged_df = merged_df.fillna("")
-    merged_df["Description"] = merged_df["Description"].astype(str).str.strip()
-    merged_df["Type"] = merged_df["Type"].astype(str).str.strip()
-    merged_df["SourceBank"] = merged_df["SourceBank"].astype(str).str.strip()
-    merged_df["Date"] = pd.to_datetime(merged_df["Date"], errors="coerce").dt.strftime(
-        "%Y-%m-%d"
-    )
-    merged_df["Amount"] = pd.to_numeric(merged_df["Amount"], errors="coerce").round(2)
-    merged_df["Balance"] = pd.to_numeric(merged_df["Balance"], errors="coerce").round(2)
 
     return merged_df
 
@@ -128,9 +149,7 @@ def clean_bank_statements(statements):
                 df = df.rename(columns={"Started Date": "Date"})
 
             if "Date" in df.columns:
-                df["Date"] = pd.to_datetime(df["Date"], errors="coerce").dt.date.astype(
-                    str
-                )
+                df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
 
         elif bank == Bank.ING_RON:
             rename_map = {
@@ -141,9 +160,8 @@ def clean_bank_statements(statements):
             df = df.rename(columns=rename_map)
 
             if "Date" in df.columns:
-                df["Date"] = pd.to_datetime(df["Date"], errors="coerce").dt.date
+                df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
                 df = df.dropna(subset=["Date"])
-                df["Date"] = df["Date"].astype(str)
 
             debit_col, credit_col = "Debit", "Credit"
             df["Amount"] = df.apply(
@@ -168,8 +186,6 @@ def clean_bank_statements(statements):
             df = df.rename(columns=rename_map)
 
             df["Date"] = pd.to_datetime(df["Date"], format="%Y%m%d", errors="coerce")
-
-            df["Date"] = df["Date"].dt.strftime("%Y-%m-%d")
 
             if "Debit/credit" in df.columns and "Amount" in df.columns:
 
@@ -204,15 +220,35 @@ def clean_bank_statements(statements):
                 )
                 df = df.drop(columns=["Notifications"])
 
-        df = normalize_bank_dataframe(df, bank)
         df["SourceBank"] = bank.name
+
+        # this is used just to preserve csv order in case the csv doesnt contain a time component
+        # its annoying cause some csv have earliest date first or most recent one first so we have to flip
+        if len(df) > 1:
+            if df["Date"].iloc[0] <= df["Date"].iloc[-1]:
+                df["orig_index"] = range(len(df))  # earliest first
+            else:
+                df = df.iloc[::-1].reset_index(
+                    drop=True
+                )  # most recent first so we flip
+                df["orig_index"] = range(len(df))
+        else:
+            df["orig_index"] = [0]
 
         cleaned[bank] = df
 
     return cleaned
 
 
-def normalize_bank_dataframe(df: pd.DataFrame, bank):
+def normalize_bank_dataframe(df: pd.DataFrame):
+    df = df.copy()
+
+    # make sure transactions are in the cronological order, we also store the index in db so we can "save" the order
+    df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
+    df = df.dropna(subset=["Date"])
+    df = df.sort_values(by=["Date", "orig_index"]).reset_index(drop=True)
+    df["Date"] = df["Date"].dt.strftime("%Y-%m-%d %H:%M:%S")
+
     for col in ["Amount", "Balance"]:
         if col in df.columns:
             df[col] = (
@@ -223,8 +259,29 @@ def normalize_bank_dataframe(df: pd.DataFrame, bank):
             )
             df[col] = pd.to_numeric(df[col], errors="coerce")
 
-            if "ro" in bank.name.lower():
+            if df["SourceBank"].str.lower().str.contains("ro").any():
                 df[col] = df[col] / EUR_RON_RATE
+
+    # first_balance = df.groupby("SourceBank")["Balance"].first().to_dict()
+    # print(f"First balances {first_balance}")
+    # bank_latest_balance = first_balance.copy()
+    # unified_balances = []
+
+    # for _, row in df.iterrows():
+    #     bank = row["SourceBank"]
+    #     if pd.notna(row["Balance"]):
+    #         bank_latest_balance[bank] = row["Balance"]
+    #     unified_balances.append(sum(bank_latest_balance.values()))
+
+    df["UnifiedBalance"] = 0
+
+    df = df.fillna("")
+    df["Description"] = df["Description"].astype(str).str.strip()
+    df["Type"] = df["Type"].astype(str).str.strip()
+    df["SourceBank"] = df["SourceBank"].astype(str).str.strip()
+    df["Amount"] = pd.to_numeric(df["Amount"], errors="coerce").round(2)
+    df["Balance"] = pd.to_numeric(df["Balance"], errors="coerce").round(2)
+    df["UnifiedBalance"] = pd.to_numeric(df["UnifiedBalance"], errors="coerce").round(2)
 
     return df
 
@@ -252,13 +309,11 @@ def compute_summary(records):
 
     total_in = df.loc[df["amount"] > 0, "amount"].sum()
     total_out = df.loc[df["amount"] < 0, "amount"].sum()
-    by_bank = df.groupby("source_bank")["amount"].sum().to_dict()
 
     return {
         "total_in": round(total_in, 2),
         "total_out": round(total_out, 2),
         "net_balance": round(total_in + total_out, 2),
-        "by_bank": {k: round(v, 2) for k, v in by_bank.items()},
     }
 
 
@@ -266,6 +321,7 @@ def get_bank_transactions(start_date, end_date, bank):
     records = get_bank_records(
         start_date=start_date, end_date=end_date, source_bank=bank
     )
+
     if not records:
         return None
 
@@ -278,6 +334,5 @@ def get_bank_transactions(start_date, end_date, bank):
             "count": len(records),
             "start_date": start_date,
             "end_date": end_date,
-            "bank": bank,
         },
     }

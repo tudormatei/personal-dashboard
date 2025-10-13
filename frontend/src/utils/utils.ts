@@ -11,6 +11,24 @@ export const formatDate = (dateStr: string | undefined | null): string => {
   return `${day}/${month}/${year}`;
 };
 
+export const formatDateTime = (dateStr: string | undefined | null): string => {
+  if (!dateStr) return "";
+
+  const parsed = new Date(dateStr);
+  if (isNaN(parsed.getTime())) return "";
+
+  const day = String(parsed.getDate()).padStart(2, "0");
+  const month = String(parsed.getMonth() + 1).padStart(2, "0");
+  const year = parsed.getFullYear();
+
+  const hours = String(parsed.getHours()).padStart(2, "0");
+  const minutes = String(parsed.getMinutes()).padStart(2, "0");
+
+  if (hours === "00" && minutes === "00") return `${day}/${month}/${year}`;
+
+  return `${day}/${month}/${year} ${hours}:${minutes}`;
+};
+
 export const formatDateDayMonth = (
   dateStr: string | undefined | null
 ): string => {

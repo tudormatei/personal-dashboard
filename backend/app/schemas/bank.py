@@ -12,6 +12,7 @@ class Transaction(BaseModel):
     description: str
     amount: float
     balance: Optional[float] = None
+    unified_balance: Optional[float] = None
     type: Optional[str] = None
     source_bank: str
 
@@ -20,14 +21,12 @@ class Summary(BaseModel):
     total_in: float
     total_out: float
     net_balance: float
-    by_bank: Dict[str, float]
 
 
 class Meta(BaseModel):
     count: int
     start_date: Optional[str] = None
     end_date: Optional[str] = None
-    bank: Optional[str] = None
 
 
 class TransactionsResponse(BaseModel):

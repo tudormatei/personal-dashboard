@@ -7,7 +7,7 @@ import Alert from "../../components/Alert/Alert";
 import type { operations } from "../../types/api-routes";
 import { DashboardGrid, FlexWrapper } from "../../components/Layout/Layout";
 import Card from "../../components/Card/Card";
-import { formatDate, formatNumber } from "../../utils/utils";
+import { formatDateTime, formatNumber } from "../../utils/utils";
 import {
   Bar,
   BarChart,
@@ -20,6 +20,7 @@ import {
 } from "recharts";
 import { colors, radii, spacing } from "../../constants/styling";
 import Table from "../../components/Table/Table";
+import Input from "../../components/Input/Input";
 
 type TransactionsResponse =
   operations["get_transactions_api_bank_transactions_get"]["responses"][200]["content"]["application/json"];
@@ -29,6 +30,10 @@ const Wallet = () => {
   const [alert, setAlert] = useState<AlertData | null>(null);
 
   const [walletData, setWalletData] = useState<TransactionsResponse>(null);
+  const currency = "EUR";
+
+  const [descriptionFilter, setDescriptionFilter] = useState("");
+  const [sourceBankFilter, setSourceBankFilter] = useState("");
 
   const fetchWallet = async (startDate: string, endDate: string) => {
     setLoading(true);
@@ -54,6 +59,7 @@ const Wallet = () => {
       setLoading(false);
     }
   };
+
   const dailyFlows = walletData?.transactions?.reduce<
     Record<string, { date: string; inflow: number; outflow: number }>
   >((acc, tx) => {
@@ -67,6 +73,23 @@ const Wallet = () => {
   const chartData = dailyFlows
     ? Object.values(dailyFlows).sort((a, b) => a.date.localeCompare(b.date))
     : [];
+
+  const filteredTransactions =
+    walletData?.transactions
+      ?.filter((tx) =>
+        descriptionFilter
+          ? tx.description
+              ?.toLowerCase()
+              .includes(descriptionFilter.toLowerCase())
+          : true
+      )
+      ?.filter((tx) =>
+        sourceBankFilter ? tx.source_bank === sourceBankFilter : true
+      ) ?? [];
+
+  const availableBanks = Array.from(
+    new Set(walletData?.transactions?.map((tx) => tx.source_bank) ?? [])
+  );
 
   return (
     <>
@@ -83,15 +106,21 @@ const Wallet = () => {
             <DashboardGrid>
               <Card
                 title="Total In"
-                value={formatNumber(walletData.summary.total_in)}
+                value={`${formatNumber(
+                  walletData.summary.total_in
+                )} ${currency}`}
               />
               <Card
                 title="Total Out"
-                value={formatNumber(walletData.summary.total_out)}
+                value={`${formatNumber(
+                  walletData.summary.total_out
+                )} ${currency}`}
               />
               <Card
                 title="Net Balance"
-                value={formatNumber(walletData.summary.net_balance)}
+                value={`${formatNumber(
+                  walletData.summary.net_balance
+                )} ${currency}`}
               />
             </DashboardGrid>
           </FlexWrapper>
@@ -107,7 +136,7 @@ const Wallet = () => {
                 <XAxis
                   dataKey="date"
                   stroke={colors.charts.axis}
-                  tickFormatter={(d) => formatDate(d)}
+                  tickFormatter={(d) => formatDateTime(d)}
                 />
                 <YAxis
                   stroke={colors.charts.axis}
@@ -142,23 +171,51 @@ const Wallet = () => {
 
           <FlexWrapper>
             <SubHeader>Transactions</SubHeader>
+            <div className="flex gap-4 mb-4 flex-wrap">
+              <Input
+                placeholder="Search description..."
+                value={descriptionFilter}
+                onChange={(e) => setDescriptionFilter(e.target.value)}
+              />
+              <select
+                value={sourceBankFilter}
+                onChange={(e) => setSourceBankFilter(e.target.value)}
+                style={{
+                  padding: "0.5rem",
+                  borderRadius: "8px",
+                  border: "1px solid #ccc",
+                  minWidth: "160px",
+                }}
+              >
+                <option value="">All Banks</option>
+                {availableBanks.map((bank) => (
+                  <option key={bank} value={bank}>
+                    {bank}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <Table
               headers={[
+                "Index",
                 "Date",
                 "Type",
                 "Amount",
                 "Balance",
+                "Unified Balance",
                 "Description",
                 "Bank",
               ]}
               scrollable
               minHeight="300px"
             >
-              {walletData.transactions
+              {filteredTransactions
                 .sort((a, b) => a.date.localeCompare(b.date))
                 .map((tx, i) => (
                   <tr key={i}>
-                    <td>{formatDate(tx.date)}</td>
+                    <td>{i}</td>
+                    <td>{formatDateTime(tx.date)}</td>
                     <td>{tx.type ?? "-"}</td>
                     <td
                       style={{
@@ -172,6 +229,11 @@ const Wallet = () => {
                     </td>
                     <td>
                       {tx.balance !== null ? formatNumber(tx.balance) : "-"}
+                    </td>
+                    <td>
+                      {tx.unified_balance !== null
+                        ? formatNumber(tx.unified_balance)
+                        : "-"}
                     </td>
                     <td>{tx.description}</td>
                     <td>{tx.source_bank}</td>

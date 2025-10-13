@@ -14,9 +14,11 @@ def init_bank_table():
             description TEXT,
             amount REAL,
             balance REAL,
+            unified_balance REAL,
             type TEXT,
             source_bank TEXT,
-            UNIQUE(date, description, amount, balance, type, source_bank)
+            orig_index INTEGER,
+            UNIQUE(date, description, amount, balance, source_bank)
         )
         """
     )
@@ -34,16 +36,18 @@ def insert_bank_records(df):
             cur.execute(
                 """
                 INSERT INTO bank_records
-                (date, description, amount, balance, type, source_bank)
-                VALUES (?, ?, ?, ?, ?, ?)
+                (date, description, amount, balance, unified_balance, type, source_bank, orig_index)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     row.get("Date"),
                     row.get("Description"),
                     row.get("Amount"),
                     row.get("Balance"),
+                    row.get("UnifiedBalance"),
                     row.get("Type"),
                     row.get("SourceBank"),
+                    row.get("orig_index"),
                 ),
             )
             inserted_count += 1
@@ -60,7 +64,7 @@ def get_bank_records(source_bank=None, start_date=None, end_date=None):
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
 
-    query = "SELECT id, date, description, amount, balance, type, source_bank FROM bank_records WHERE 1=1"
+    query = "SELECT id, date, description, amount, balance, unified_balance, type, source_bank FROM bank_records WHERE 1=1"
     params = []
 
     if source_bank:
@@ -75,9 +79,20 @@ def get_bank_records(source_bank=None, start_date=None, end_date=None):
         query += " AND date <= ?"
         params.append(end_date)
 
+    query += " ORDER BY date, orig_index"
+
     cur.execute(query, params)
     rows = cur.fetchall()
     conn.close()
 
-    columns = ["id", "date", "description", "amount", "balance", "type", "source_bank"]
+    columns = [
+        "id",
+        "date",
+        "description",
+        "amount",
+        "balance",
+        "unified_balance",
+        "type",
+        "source_bank",
+    ]
     return [dict(zip(columns, row)) for row in rows]

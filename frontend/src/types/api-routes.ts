@@ -310,8 +310,6 @@ export interface components {
             start_date?: string | null;
             /** End Date */
             end_date?: string | null;
-            /** Bank */
-            bank?: string | null;
         };
         /** MonteCarloRequest */
         MonteCarloRequest: {
@@ -440,10 +438,6 @@ export interface components {
             total_out: number;
             /** Net Balance */
             net_balance: number;
-            /** By Bank */
-            by_bank: {
-                [key: string]: number;
-            };
         };
         /** TimeWeightedReturn */
         TimeWeightedReturn: {
@@ -491,6 +485,8 @@ export interface components {
             amount: number;
             /** Balance */
             balance?: number | null;
+            /** Unified Balance */
+            unified_balance?: number | null;
             /** Type */
             type?: string | null;
             /** Source Bank */
