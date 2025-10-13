@@ -7,12 +7,19 @@ import Alert from "../../components/Alert/Alert";
 import type { operations } from "../../types/api-routes";
 import { DashboardGrid, FlexWrapper } from "../../components/Layout/Layout";
 import Card from "../../components/Card/Card";
-import { formatDateTime, formatNumber } from "../../utils/utils";
+import {
+  formatDate,
+  formatDateDayMonth,
+  formatDateTime,
+  formatNumber,
+} from "../../utils/utils";
 import {
   Bar,
   BarChart,
   CartesianGrid,
   Legend,
+  Line,
+  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -124,7 +131,60 @@ const Wallet = () => {
               />
             </DashboardGrid>
           </FlexWrapper>
-
+          <FlexWrapper>
+            <SubHeader>Total Balance Over Time</SubHeader>
+            <ResponsiveContainer width="100%" height={400}>
+              <LineChart data={walletData.transactions}>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke={colors.charts.grid}
+                />
+                <XAxis
+                  stroke={colors.charts.axis}
+                  dataKey="date"
+                  tickFormatter={(date) => `${formatDateDayMonth(date)}`}
+                />
+                <YAxis
+                  stroke={colors.charts.axis}
+                  label={{
+                    value: "Value (€)",
+                    angle: -90,
+                    position: "insideLeft",
+                    offset: 0,
+                    fill: colors.charts.axis,
+                    style: { fontSize: "0.8rem" },
+                  }}
+                  tickFormatter={(value) => `${formatNumber(value)}`}
+                />
+                <Tooltip
+                  formatter={(value: number) => `$${formatNumber(value)}`}
+                  contentStyle={{
+                    backgroundColor: colors.charts.tooltipBg,
+                    border: `1px solid ${colors.charts.tooltipBg}`,
+                    borderRadius: radii.md,
+                    padding: spacing.sm,
+                    color: colors.charts.tooltipText,
+                  }}
+                  labelFormatter={(label) => `Date: ${formatDate(label)}`}
+                />
+                <Legend
+                  wrapperStyle={{
+                    color: colors.textPrimary,
+                    marginTop: spacing.sm,
+                  }}
+                  iconType="circle"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="unified_balance"
+                  stroke={colors.charts.primary}
+                  strokeWidth={2}
+                  dot={false}
+                  name="Total Value"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </FlexWrapper>
           <FlexWrapper>
             <SubHeader>Daily Cash Flows</SubHeader>
             <ResponsiveContainer width="100%" height={300}>
@@ -136,7 +196,7 @@ const Wallet = () => {
                 <XAxis
                   dataKey="date"
                   stroke={colors.charts.axis}
-                  tickFormatter={(d) => formatDateTime(d)}
+                  tickFormatter={(d) => formatDateDayMonth(d)}
                 />
                 <YAxis
                   stroke={colors.charts.axis}
@@ -203,7 +263,7 @@ const Wallet = () => {
                 "Type",
                 "Amount",
                 "Balance",
-                "Unified Balance",
+                "Total Balance",
                 "Description",
                 "Bank",
               ]}

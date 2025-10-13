@@ -262,18 +262,23 @@ def normalize_bank_dataframe(df: pd.DataFrame):
             if df["SourceBank"].str.lower().str.contains("ro").any():
                 df[col] = df[col] / EUR_RON_RATE
 
-    # first_balance = df.groupby("SourceBank")["Balance"].first().to_dict()
-    # print(f"First balances {first_balance}")
-    # bank_latest_balance = first_balance.copy()
-    # unified_balances = []
+    first_balances = df.groupby("SourceBank")["Balance"].first().to_dict()
+    first_amounts = df.groupby("SourceBank")["Amount"].first().to_dict()
 
-    # for _, row in df.iterrows():
-    #     bank = row["SourceBank"]
-    #     if pd.notna(row["Balance"]):
-    #         bank_latest_balance[bank] = row["Balance"]
-    #     unified_balances.append(sum(bank_latest_balance.values()))
+    initial_bank_balances = {
+        bank: first_balances[bank] - first_amounts[bank]
+        for bank in first_balances.keys()
+    }
 
-    df["UnifiedBalance"] = 0
+    latest_balance = initial_bank_balances.copy()
+    unified_balances = []
+
+    for _, row in df.iterrows():
+        bank = row["SourceBank"]
+        latest_balance[bank] = row["Balance"]
+        unified_balances.append(sum(latest_balance.values()))
+
+    df["UnifiedBalance"] = unified_balances
 
     df = df.fillna("")
     df["Description"] = df["Description"].astype(str).str.strip()
