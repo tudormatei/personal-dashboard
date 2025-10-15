@@ -28,9 +28,6 @@ type TransactionsResponse =
 type BanksResponse =
   operations["get_available_api_bank__get"]["responses"][200]["content"]["application/json"];
 
-type CategoriesResponse =
-  operations["get_available_api_bank_categories_get"]["responses"][200]["content"]["application/json"];
-
 const Transactions = () => {
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState<AlertData | null>(null);
@@ -40,12 +37,9 @@ const Transactions = () => {
 
   const [walletData, setWalletData] = useState<TransactionsResponse>(null);
   const [availableBanks, setAvailableBanks] = useState<string[]>();
-  const [availableCategories, setAvailableCategories] =
-    useState<CategoriesResponse>();
 
   const [descriptionFilter, setDescriptionFilter] = useState("");
   const [sourceBankFilter, setSourceBankFilter] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("");
   const [walletStartDate, setWalletStartDate] = useState(
     formatDate(new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000))
   );
@@ -65,18 +59,6 @@ const Transactions = () => {
       }
     };
 
-    const fetchCategories = async () => {
-      setAlert(null);
-      try {
-        const res = await fetch("/api/bank/categories");
-        const data = (await res.json()) as CategoriesResponse;
-        setAvailableCategories(data);
-      } catch {
-        setAlert({ text: "Failed to fetch bank names", type: "error" });
-      }
-    };
-
-    fetchCategories();
     fetchBanks();
   }, []);
 
@@ -91,7 +73,6 @@ const Transactions = () => {
       if (walletEndDate && !getAll) params.set("end_date", walletEndDate);
       if (descriptionFilter) params.set("description", descriptionFilter);
       if (sourceBankFilter) params.set("bank", sourceBankFilter);
-      if (categoryFilter) params.set("category", categoryFilter);
       params.set("page", pageNumber.toString());
 
       try {
@@ -112,7 +93,6 @@ const Transactions = () => {
       descriptionFilter,
       sourceBankFilter,
       getAll,
-      categoryFilter,
     ]
   );
 
@@ -154,17 +134,6 @@ const Transactions = () => {
                 ...(availableBanks?.map((bank) => ({
                   label: bank,
                   value: bank,
-                })) || []),
-              ]}
-            />
-            <Select
-              value={categoryFilter}
-              onChange={(val) => setCategoryFilter(val ?? "")}
-              options={[
-                { label: "All Categories", value: "" },
-                ...(availableCategories?.categories.map((category) => ({
-                  label: category,
-                  value: category,
                 })) || []),
               ]}
             />

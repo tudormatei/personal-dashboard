@@ -60,11 +60,22 @@ def insert_bank_records(df):
     return inserted_count
 
 
-def get_bank_records(source_bank=None, start_date=None, end_date=None):
+def get_bank_records(
+    source_bank=None,
+    start_date=None,
+    end_date=None,
+    description=None,
+    page: int | None = 1,
+    page_size: int | None = 50,
+):
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
 
-    query = "SELECT id, date, description, amount, balance, unified_balance, type, source_bank FROM bank_records WHERE 1=1"
+    query = """
+        SELECT id, date, description, amount, balance, unified_balance, type, source_bank, orig_index
+        FROM bank_records
+        WHERE 1=1
+    """
     params = []
 
     if source_bank:
@@ -79,12 +90,23 @@ def get_bank_records(source_bank=None, start_date=None, end_date=None):
         query += " AND date <= ?"
         params.append(end_date)
 
-    query += " ORDER BY date, orig_index"
+    if description:
+        query += " AND description LIKE ?"
+        params.append(f"%{description}%")
 
-    cur.execute(query, params)
+    count_query = f"SELECT COUNT(*) FROM ({query})"
+    cur.execute(count_query, params)
+    total_count = cur.fetchone()[0]
+
+    if page is not None and page_size is not None:
+        offset = (page - 1) * page_size
+        query += " ORDER BY date, orig_index LIMIT ? OFFSET ?"
+        cur.execute(query, params + [page_size, offset])
+    else:
+        query += " ORDER BY date, orig_index"
+        cur.execute(query, params)
+
     rows = cur.fetchall()
-    conn.close()
-
     columns = [
         "id",
         "date",
@@ -94,5 +116,20 @@ def get_bank_records(source_bank=None, start_date=None, end_date=None):
         "unified_balance",
         "type",
         "source_bank",
+        "orig_index",
     ]
-    return [dict(zip(columns, row)) for row in rows]
+    records = [dict(zip(columns, row)) for row in rows]
+
+    conn.close()
+    return records, total_count
+
+
+def get_all_banks():
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT DISTINCT source_bank FROM bank_records WHERE source_bank IS NOT NULL"
+    )
+    banks = [row[0] for row in cur.fetchall()]
+    conn.close()
+    return sorted(banks)

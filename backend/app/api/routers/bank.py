@@ -1,9 +1,19 @@
 from typing import List, Optional
-from fastapi import APIRouter, HTTPException, UploadFile, File, status
+from fastapi import APIRouter, HTTPException, Query, UploadFile, File, status
 
 from ...utils.validation import validate_iso_date
-from ...services.bank import get_bank_transactions, process_bank_files
-from ...schemas.bank import TransactionsResponse, UploadResponse
+from ...services.bank import (
+    get_bank_transactions,
+    get_distinct_banks,
+    get_full_summary,
+    process_bank_files,
+)
+from ...schemas.bank import (
+    BanksResponse,
+    SummaryResponse,
+    TransactionsResponse,
+    UploadResponse,
+)
 
 
 router = APIRouter(prefix="/bank")
@@ -42,8 +52,28 @@ def get_transactions(
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
     bank: Optional[str] = None,
+    description: Optional[str] = None,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(50, ge=1, le=200),
 ) -> TransactionsResponse | None:
     validate_iso_date(start_date, "start_date")
     validate_iso_date(end_date, "end_date")
 
-    return get_bank_transactions(start_date=start_date, end_date=end_date, bank=bank)
+    return get_bank_transactions(
+        start_date=start_date,
+        end_date=end_date,
+        bank=bank,
+        description=description,
+        page=page,
+        page_size=page_size,
+    )
+
+
+@router.get("/")
+def get_available() -> BanksResponse:
+    return get_distinct_banks()
+
+
+@router.get("/summary")
+def summary(aggregate_days: Optional[int] = None) -> SummaryResponse | None:
+    return get_full_summary(aggregate_days)

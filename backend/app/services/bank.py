@@ -1,17 +1,21 @@
+from collections import defaultdict
+from datetime import date, datetime, timedelta
 import io
 from typing import List
 import pandas as pd
 import csv
 import os
 
-from ..repositories.bank import get_bank_records, insert_bank_records
+from ..repositories.bank import get_all_banks, get_bank_records, insert_bank_records
 
 from ..constants.bank import (
+    DEFAULT_SUMMARY_AGGREGATION_DAYS,
     DESC_IGNORE_KEYWORDS,
     EUR_RON_RATE,
     NUMBER_INGNL_COLUMNS,
     NUMBER_INGRO_COLUMNS,
     NUMBER_REVOLUT_COLUMNS,
+    TRANSACTION_CATEGORIES,
     Bank,
 )
 
@@ -43,36 +47,9 @@ async def process_bank_files(files: List[dict]):
 
     statements = group_bank_statements(dataframes)
     cleaned_statements = clean_bank_statements(statements)
-    for bank, df in cleaned_statements.items():
-        print(f"Bank statement: {bank} extracted {len(cleaned_statements[bank])} rows")
-
-    pd.set_option("display.max_columns", None)
-    for bank, df in cleaned_statements.items():
-        if bank in {Bank.ING_RON}:
-            print(f"\nTail of {bank.name} before merge:")
-            print(df.tail(3))
-
     merged_dataframe = merge_bank_statements(cleaned_statements)
-    for bank in [Bank.ING_RON]:
-        print(f"\nTail of {bank.name} after merge:")
-        print(merged_dataframe[merged_dataframe["SourceBank"] == bank.name].tail(3))
-    print(f"Total merged df length {len(merged_dataframe)}")
-
     filtered_dataframe = filter_bank_records(merged_dataframe)
-    for bank in [Bank.ING_RON]:
-        print(f"\nTail of {bank.name} after filter:")
-        print(filtered_dataframe[filtered_dataframe["SourceBank"] == bank.name].tail(3))
-    print(f"Total filtered df length {len(filtered_dataframe)}")
-
     normalized_dataframe = normalize_bank_dataframe(filtered_dataframe)
-    for bank in [Bank.ING_RON]:
-        print(f"\nTail of {bank.name} after normalizing:")
-        print(
-            normalized_dataframe[normalized_dataframe["SourceBank"] == bank.name].head(
-                3
-            )
-        )
-    print(f"Total normalized df length {len(normalized_dataframe)}")
 
     inserted_rows = insert_bank_records(normalized_dataframe)
 
@@ -259,8 +236,10 @@ def normalize_bank_dataframe(df: pd.DataFrame):
             )
             df[col] = pd.to_numeric(df[col], errors="coerce")
 
-            if df["SourceBank"].str.lower().str.contains("ro").any():
-                df[col] = df[col] / EUR_RON_RATE
+    mask = df["SourceBank"].str.lower().str.contains("ro")
+    df.loc[mask, ["Amount", "Balance"]] = (
+        df.loc[mask, ["Amount", "Balance"]] / EUR_RON_RATE
+    )
 
     first_balances = df.groupby("SourceBank")["Balance"].first().to_dict()
     first_amounts = df.groupby("SourceBank")["Amount"].first().to_dict()
@@ -308,36 +287,161 @@ def group_bank_statements(dataframes: List[pd.DataFrame]):
     return statements
 
 
-def compute_summary(records):
-    df = pd.DataFrame(records)
-    df["amount"] = pd.to_numeric(df["amount"], errors="coerce").fillna(0)
-
-    total_in = df.loc[df["amount"] > 0, "amount"].sum()
-    total_out = df.loc[df["amount"] < 0, "amount"].sum()
-
-    return {
-        "total_in": round(total_in, 2),
-        "total_out": round(total_out, 2),
-        "net_balance": round(total_in + total_out, 2),
-    }
-
-
-def get_bank_transactions(start_date, end_date, bank):
-    records = get_bank_records(
-        start_date=start_date, end_date=end_date, source_bank=bank
+def get_bank_transactions(
+    start_date=None,
+    end_date=None,
+    bank=None,
+    description=None,
+    page=1,
+    page_size=50,
+):
+    records, total_count = get_bank_records(
+        start_date=start_date,
+        end_date=end_date,
+        source_bank=bank,
+        description=description,
+        page=page,
+        page_size=page_size,
     )
 
     if not records:
         return None
 
-    summary = compute_summary(records)
+    transactions = categorize_transactions(records)
+
+    total_pages = (total_count + page_size - 1) // page_size
 
     return {
-        "transactions": records,
-        "summary": summary,
+        "transactions": transactions.to_dict(orient="records"),
+        "pagination": {
+            "page": page,
+            "page_size": page_size,
+            "total_count": total_count,
+            "total_pages": total_pages,
+        },
         "meta": {
-            "count": len(records),
             "start_date": start_date,
             "end_date": end_date,
         },
+    }
+
+
+def categorize_transactions(transactions):
+    transactions = pd.DataFrame(transactions)
+
+    transactions["category"] = "Other"
+    transactions["subcategory"] = ""
+
+    for category, subcats in TRANSACTION_CATEGORIES.items():
+        for subcat, keywords in subcats.items():
+            mask = transactions["description"].str.contains(
+                "|".join(keywords), case=False, na=False
+            )
+            transactions.loc[mask, ["category", "subcategory"]] = [category, subcat]
+
+    return transactions
+
+
+def get_distinct_banks():
+    return {"banks": get_all_banks()}
+
+
+def get_distinct_categories():
+    categories = []
+    for category in TRANSACTION_CATEGORIES.keys():
+        categories.append(category)
+
+    subcategories = []
+    for category, subcats in TRANSACTION_CATEGORIES.items():
+        for subcat, _ in subcats.items():
+            subcategories.append(subcat)
+
+    return {"categories": categories, "subcategories": subcategories}
+
+
+def compute_summary(transactions):
+    total_income = 0
+    total_spent = 0
+
+    for tx in transactions:
+        amount = tx.get("amount") or 0
+        if amount >= 0:
+            total_income += amount
+        else:
+            total_spent += abs(amount)
+
+    return {
+        "total_income": total_income,
+        "total_spent": total_spent,
+        "net_savings": total_income - total_spent,
+    }
+
+
+def compute_daily_flows(transactions_df: pd.DataFrame, aggregate_days):
+    transactions_df["date"] = pd.to_datetime(transactions_df["date"])
+
+    transactions_df["inflow"] = transactions_df["amount"].apply(
+        lambda x: x if x > 0 else 0
+    )
+    transactions_df["outflow"] = transactions_df["amount"].apply(
+        lambda x: abs(x) if x < 0 else 0
+    )
+
+    if aggregate_days == 7:
+        transactions_df["period"] = (
+            transactions_df["date"]
+            .dt.to_period("W")
+            .apply(lambda p: p.start_time.date())
+        )
+    elif aggregate_days == 30:
+        transactions_df["period"] = (
+            transactions_df["date"]
+            .dt.to_period("M")
+            .apply(lambda p: p.start_time.date())
+        )
+    else:
+        transactions_df["period"] = transactions_df["date"].dt.date
+
+    summary = (
+        transactions_df.sort_values("date")
+        .groupby("period", as_index=False)
+        .agg(
+            inflow=("inflow", "sum"),
+            outflow=("outflow", "sum"),
+            unified_balance=("unified_balance", "last"),
+        )
+        .rename(columns={"period": "date"})
+        .sort_values("date")
+    )
+
+    return [
+        {
+            "date": row["date"],
+            "inflow": float(row["inflow"]),
+            "outflow": float(row["outflow"]),
+            "unified_balance": (
+                float(row["unified_balance"])
+                if row["unified_balance"] is not None
+                else None
+            ),
+        }
+        for _, row in summary.iterrows()
+    ]
+
+
+def get_full_summary(aggregate_days):
+    records, _ = get_bank_records(page=None, page_size=None)
+    if not records:
+        return None
+
+    transactions_df = categorize_transactions(records)
+    summary = compute_summary(records)
+    chart_data = compute_daily_flows(
+        transactions_df,
+        aggregate_days if aggregate_days else DEFAULT_SUMMARY_AGGREGATION_DAYS,
+    )
+
+    return {
+        "summary": summary,
+        "chart_data": chart_data,
     }

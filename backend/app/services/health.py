@@ -209,10 +209,14 @@ def get_macros_stats(
         records = fetch_records(
             record_type=record_type, start_date=start_date, end_date=end_date
         )
-        result[nutrient_name] = compute_nutrient_stats(
+        stats = compute_nutrient_stats(
             records,
             ma_windows=ma_windows,
         )
+        if not stats:
+            continue
+
+        result[nutrient_name] = stats
 
     if not len(result):
         return None
