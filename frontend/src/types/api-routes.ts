@@ -147,7 +147,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Get Available */
+        get: operations["get_available_api_bank__get"];
         put?: never;
         /** Upload Bank */
         post: operations["upload_bank_api_bank__post"];
@@ -174,6 +175,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/bank/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Available */
+        get: operations["get_available_api_bank_categories_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bank/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Summary */
+        get: operations["summary_api_bank_summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -187,6 +222,11 @@ export interface components {
             /** Id */
             id: string;
         };
+        /** BanksResponse */
+        BanksResponse: {
+            /** Banks */
+            banks: string[];
+        };
         /** Body_upload_bank_api_bank__post */
         Body_upload_bank_api_bank__post: {
             /** Files */
@@ -199,6 +239,20 @@ export interface components {
              * Format: binary
              */
             file: string;
+        };
+        /** CashFlowPoint */
+        CashFlowPoint: {
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /** Inflow */
+            inflow: number;
+            /** Outflow */
+            outflow: number;
+            /** Unified Balance */
+            unified_balance?: number | null;
         };
         /** CashReport */
         CashReport: {
@@ -224,6 +278,13 @@ export interface components {
             type: string;
             /** Fxratetobase */
             fxRateToBase: number;
+        };
+        /** CategoryResponse */
+        CategoryResponse: {
+            /** Categories */
+            categories: string[];
+            /** Subcategories */
+            subcategories: string[];
         };
         /** DailyNutrient */
         DailyNutrient: {
@@ -301,15 +362,6 @@ export interface components {
             total_weight_change: number;
             /** Days Used */
             days_used: number;
-        };
-        /** Meta */
-        Meta: {
-            /** Count */
-            count: number;
-            /** Start Date */
-            start_date?: string | null;
-            /** End Date */
-            end_date?: string | null;
         };
         /** MonteCarloRequest */
         MonteCarloRequest: {
@@ -430,14 +482,20 @@ export interface components {
             /** Activitydescription */
             activityDescription: string;
         };
-        /** Summary */
-        Summary: {
-            /** Total In */
-            total_in: number;
-            /** Total Out */
-            total_out: number;
-            /** Net Balance */
-            net_balance: number;
+        /** SummaryResponse */
+        SummaryResponse: {
+            summary: components["schemas"]["SummaryTotals"];
+            /** Chart Data */
+            chart_data: components["schemas"]["CashFlowPoint"][];
+        };
+        /** SummaryTotals */
+        SummaryTotals: {
+            /** Total Income */
+            total_income: number;
+            /** Total Spent */
+            total_spent: number;
+            /** Net Savings */
+            net_savings: number;
         };
         /** TimeWeightedReturn */
         TimeWeightedReturn: {
@@ -477,7 +535,10 @@ export interface components {
         Transaction: {
             /** Id */
             id: number;
-            /** Date */
+            /**
+             * Date
+             * Format: date-time
+             */
             date: string;
             /** Description */
             description: string;
@@ -490,14 +551,48 @@ export interface components {
             /** Type */
             type?: string | null;
             /** Source Bank */
-            source_bank: string;
+            source_bank?: string | null;
+            /** Category */
+            category?: string | null;
+            /** Subcategory */
+            subcategory?: string | null;
+        };
+        /** TransactionMeta */
+        TransactionMeta: {
+            /** Start Date */
+            start_date: string | null;
+            /** End Date */
+            end_date: string | null;
+        };
+        /** TransactionPagination */
+        TransactionPagination: {
+            /**
+             * Page
+             * @example 1
+             */
+            page: number;
+            /**
+             * Page Size
+             * @example 50
+             */
+            page_size: number;
+            /**
+             * Total Count
+             * @example 2000
+             */
+            total_count: number;
+            /**
+             * Total Pages
+             * @example 40
+             */
+            total_pages: number;
         };
         /** TransactionsResponse */
         TransactionsResponse: {
             /** Transactions */
             transactions: components["schemas"]["Transaction"][];
-            summary: components["schemas"]["Summary"];
-            meta: components["schemas"]["Meta"];
+            pagination: components["schemas"]["TransactionPagination"];
+            meta: components["schemas"]["TransactionMeta"];
         };
         /** UploadResponse */
         UploadResponse: {
@@ -850,6 +945,26 @@ export interface operations {
             };
         };
     };
+    get_available_api_bank__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanksResponse"];
+                };
+            };
+        };
+    };
     upload_bank_api_bank__post: {
         parameters: {
             query?: never;
@@ -889,6 +1004,9 @@ export interface operations {
                 start_date?: string | null;
                 end_date?: string | null;
                 bank?: string | null;
+                description?: string | null;
+                page?: number;
+                page_size?: number;
             };
             header?: never;
             path?: never;
@@ -903,6 +1021,57 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TransactionsResponse"] | null;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_available_api_bank_categories_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryResponse"];
+                };
+            };
+        };
+    };
+    summary_api_bank_summary_get: {
+        parameters: {
+            query?: {
+                aggregate_days?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SummaryResponse"] | null;
                 };
             };
             /** @description Validation Error */

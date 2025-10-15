@@ -11,6 +11,17 @@ export const colors = {
   warning: "#ffaa00",
   info: "#00bfff",
 
+  categories: {
+    Food: "#c87b32",
+    "Health & Fitness": "#5ea36b",
+    Travel: "#4d82b8",
+    Transport: "#8666b8",
+    Shopping: "#c15b5b",
+    Entertainment: "#c9a74a",
+    Career: "#4ea4b8",
+    Bills: "#8a6f5a",
+  },
+
   charts: {
     weightLine: "#ff8c00",
 

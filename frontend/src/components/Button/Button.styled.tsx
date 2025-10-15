@@ -5,6 +5,7 @@ import {
   radii,
   shadows,
   transitions,
+  typography,
 } from "../../constants/styling";
 
 type StyledButtonProps = {
@@ -18,7 +19,7 @@ export const StyledButton = styled.button<StyledButtonProps>`
   align-items: center;
   gap: ${spacing.sm};
   padding: ${spacing.sm} ${spacing.xl};
-  font-weight: 600;
+  font-weight: ${typography.fontWeight.bold};
   border-radius: ${radii.full};
   cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
   transition: ${transitions.base};

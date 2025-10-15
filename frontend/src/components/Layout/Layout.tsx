@@ -17,3 +17,9 @@ export const FlexWrapper = styled.div<FlexWrapperProps>`
   width: 100%;
   gap: ${spacing.lg};
 `;
+
+export const GappedDiv = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: ${spacing.md};
+`;
