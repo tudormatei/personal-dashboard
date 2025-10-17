@@ -6,10 +6,12 @@ from ...services.bank import (
     get_bank_transactions,
     get_distinct_banks,
     get_full_summary,
+    get_transaction_categories,
     process_bank_files,
 )
 from ...schemas.bank import (
     BanksResponse,
+    CategoriesResponse,
     SummaryResponse,
     TransactionsResponse,
     UploadResponse,
@@ -54,6 +56,8 @@ def get_transactions(
     bank: Optional[str] = None,
     description: Optional[str] = None,
     order: Optional[str] = None,
+    category: Optional[str] = None,
+    subcategory: Optional[str] = None,
     page: int = Query(1, ge=1),
     page_size: int = Query(50, ge=1, le=200),
 ) -> TransactionsResponse | None:
@@ -66,9 +70,16 @@ def get_transactions(
         bank=bank,
         description=description,
         order=order,
+        category=category,
+        subcategory=subcategory,
         page=page,
         page_size=page_size,
     )
+
+
+@router.get("/categories")
+def get_categories() -> CategoriesResponse:
+    return get_transaction_categories()
 
 
 @router.get("/")

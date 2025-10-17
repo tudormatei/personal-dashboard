@@ -293,28 +293,43 @@ def get_bank_transactions(
     bank=None,
     description=None,
     order=None,
+    category=None,
+    subcategory=None,
     page=1,
     page_size=50,
 ):
+    use_sql_pagination = not category and not subcategory
+
     records, total_count = get_bank_records(
         start_date=start_date,
         end_date=end_date,
         source_bank=bank,
         description=description,
         order=order,
-        page=page,
-        page_size=page_size,
+        page=page if use_sql_pagination else None,
+        page_size=page_size if use_sql_pagination else None,
     )
 
     if not records:
         return None
 
-    transactions = categorize_transactions(records)
+    df = categorize_transactions(records)
+
+    if category:
+        df = df[df["category"].str.lower() == category.lower()]
+    if subcategory:
+        df = df[df["subcategory"].str.lower() == subcategory.lower()]
+
+    if not use_sql_pagination:
+        total_count = len(df)
+        start_idx = (page - 1) * page_size
+        end_idx = start_idx + page_size
+        df = df.iloc[start_idx:end_idx]
 
     total_pages = (total_count + page_size - 1) // page_size
 
     return {
-        "transactions": transactions.to_dict(orient="records"),
+        "transactions": df.to_dict(orient="records"),
         "pagination": {
             "page": page,
             "page_size": page_size,
@@ -326,6 +341,14 @@ def get_bank_transactions(
             "end_date": end_date,
         },
     }
+
+
+def get_transaction_categories():
+    categories = {}
+    for key, val in TRANSACTION_CATEGORIES.items():
+        categories[key] = val.keys()
+
+    return {"categories": categories}
 
 
 def categorize_transactions(transactions):

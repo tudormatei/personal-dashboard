@@ -30,7 +30,7 @@ import {
 import MonteCarloSimulation from "./MonteCarloSimulation";
 import type { operations } from "../../types/api-routes";
 import type { AlertData } from "../../types/types";
-import { H1, SubHeader } from "../../components/Typography/Headings";
+import { H2, SubHeader } from "../../components/Typography/Headings";
 import { DashboardGrid, FlexWrapper } from "../../components/Layout/Layout";
 
 type Fund = {
@@ -112,7 +112,7 @@ const Investments = (): JSX.Element => {
 
   return (
     <>
-      <H1>Investment Dashboard</H1>
+      <H2>Investment Dashboard</H2>
       <FilterBar onFilter={fetchInvestments} runOnMount={false} />
 
       {loading && <Loader text="Loading investment data..." />}

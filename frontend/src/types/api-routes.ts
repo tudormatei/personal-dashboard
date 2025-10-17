@@ -182,8 +182,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get Available */
-        get: operations["get_available_api_bank_categories_get"];
+        /** Get Categories */
+        get: operations["get_categories_api_bank_categories_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -279,12 +279,12 @@ export interface components {
             /** Fxratetobase */
             fxRateToBase: number;
         };
-        /** CategoryResponse */
-        CategoryResponse: {
+        /** CategoriesResponse */
+        CategoriesResponse: {
             /** Categories */
-            categories: string[];
-            /** Subcategories */
-            subcategories: string[];
+            categories: {
+                [key: string]: string[];
+            };
         };
         /** DailyNutrient */
         DailyNutrient: {
@@ -1005,6 +1005,7 @@ export interface operations {
                 end_date?: string | null;
                 bank?: string | null;
                 description?: string | null;
+                order?: string | null;
                 page?: number;
                 page_size?: number;
             };
@@ -1034,7 +1035,7 @@ export interface operations {
             };
         };
     };
-    get_available_api_bank_categories_get: {
+    get_categories_api_bank_categories_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -1049,7 +1050,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CategoryResponse"];
+                    "application/json": components["schemas"]["CategoriesResponse"];
                 };
             };
         };

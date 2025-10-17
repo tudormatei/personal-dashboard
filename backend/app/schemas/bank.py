@@ -1,6 +1,6 @@
 from datetime import date, datetime
 from pydantic import BaseModel, Field
-from typing import Optional, List
+from typing import Dict, Optional, List
 
 
 class UploadResponse(BaseModel):
@@ -9,6 +9,10 @@ class UploadResponse(BaseModel):
 
 class BanksResponse(BaseModel):
     banks: List[str]
+
+
+class CategoriesResponse(BaseModel):
+    categories: Dict[str, List[str]]
 
 
 # Transaction

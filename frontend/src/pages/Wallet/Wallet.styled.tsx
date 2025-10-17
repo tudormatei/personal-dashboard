@@ -68,9 +68,9 @@ export const SortButton = styled.button<{ active?: boolean }>`
   align-items: center;
   justify-content: center;
   gap: ${spacing.xs};
-  background: ${({ active }) => (active ? colors.accent : colors.surfaceAlt)};
-  color: ${({ active }) => (active ? colors.background : colors.textPrimary)};
-  border: 1px solid ${({ active }) => (active ? colors.accent : colors.border)};
+  background: ${colors.surfaceAlt};
+  color: ${colors.textPrimary};
+  border: 1px solid ${colors.border};
   border-radius: ${radii.md};
   padding: ${spacing.sm} ${spacing.md};
   font-family: ${typography.fontFamily};
@@ -81,8 +81,7 @@ export const SortButton = styled.button<{ active?: boolean }>`
   box-shadow: ${({ active }) => (active ? shadows.soft : shadows.none)};
 
   &:hover {
-    background: ${colors.accent};
-    color: ${colors.background};
+    color: ${colors.accent};
     box-shadow: ${shadows.soft};
   }
 

@@ -116,6 +116,7 @@ const Summary = () => {
                     value: "Value",
                     angle: -90,
                     position: "insideLeft",
+                    offset: 0,
                     fill: colors.charts.axis,
                     style: { fontSize: "0.8rem" },
                   }}

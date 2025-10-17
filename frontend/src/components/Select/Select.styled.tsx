@@ -50,7 +50,7 @@ export const OptionsList = styled.div`
   top: calc(100% + 4px);
   width: 100%;
   border-radius: ${radii.md};
-  background: ${colors.surface};
+  background: ${colors.surfaceAlt};
   box-shadow: ${shadows.soft};
   max-height: 200px;
   overflow-y: auto;
@@ -61,23 +61,23 @@ export const OptionsList = styled.div`
   }
 
   &::-webkit-scrollbar-track {
-    background: ${colors.surface};
+    background: ${colors.surfaceAlt};
     border-radius: ${radii.md};
   }
 
   &::-webkit-scrollbar-thumb {
-    background-color: ${colors.background};
+    background-color: ${colors.surface};
     border-radius: ${radii.md};
-    border: 2px solid ${colors.surface};
+    border: 2px solid ${colors.surfaceAlt};
   }
 
   &::-webkit-scrollbar-thumb:hover {
-    background-color: ${colors.background};
+    background-color: ${colors.surface};
     opacity: 0.8;
   }
 
   scrollbar-width: thin;
-  scrollbar-color: ${colors.background} ${colors.surface};
+  scrollbar-color: ${colors.surface} ${colors.surfaceAlt};
 `;
 
 export const OptionItem = styled.div<{ selected?: boolean }>`

@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { SubHeader } from "../../components/Typography/Headings";
 import type { AlertData } from "../../types/types";
-import Loader from "../../components/Loader/Loader";
 import Alert from "../../components/Alert/Alert";
 import type { operations } from "../../types/api-routes";
 import {
@@ -22,12 +21,16 @@ import {
   SortButton,
   SubcategoryCell,
 } from "./Wallet.styled";
+import Skeleton from "../../components/Skeleton/Skeleton";
 
 type TransactionsResponse =
   operations["get_transactions_api_bank_transactions_get"]["responses"][200]["content"]["application/json"];
 
 type BanksResponse =
   operations["get_available_api_bank__get"]["responses"][200]["content"]["application/json"];
+
+type CategoriesResponse =
+  operations["get_categories_api_bank_categories_get"]["responses"][200]["content"]["application/json"];
 
 const Transactions = () => {
   const [loading, setLoading] = useState(false);
@@ -38,9 +41,13 @@ const Transactions = () => {
 
   const [walletData, setWalletData] = useState<TransactionsResponse>(null);
   const [availableBanks, setAvailableBanks] = useState<string[]>();
+  const [availableCategories, setAvailableCategories] =
+    useState<CategoriesResponse>();
 
   const [descriptionFilter, setDescriptionFilter] = useState("");
   const [sourceBankFilter, setSourceBankFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [subcategoryFilter, setSubcategoryFilter] = useState("");
   const [walletStartDate, setWalletStartDate] = useState(
     formatDate(new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000))
   );
@@ -65,6 +72,18 @@ const Transactions = () => {
       }
     };
 
+    const fetchCategories = async () => {
+      setAlert(null);
+      try {
+        const res = await fetch("/api/bank/categories");
+        const data = (await res.json()) as CategoriesResponse;
+        setAvailableCategories(data);
+      } catch {
+        setAlert({ text: "Failed to fetch categories", type: "error" });
+      }
+    };
+
+    fetchCategories();
     fetchBanks();
   }, []);
 
@@ -79,6 +98,8 @@ const Transactions = () => {
       if (walletEndDate && !getAll) params.set("end_date", walletEndDate);
       if (descriptionFilter) params.set("description", descriptionFilter);
       if (sourceBankFilter) params.set("bank", sourceBankFilter);
+      if (categoryFilter) params.set("category", categoryFilter);
+      if (subcategoryFilter) params.set("subcategory", subcategoryFilter);
       params.set("order", sortOrder);
       params.set("page", pageNumber.toString());
 
@@ -101,6 +122,8 @@ const Transactions = () => {
       sourceBankFilter,
       getAll,
       sortOrder,
+      categoryFilter,
+      subcategoryFilter,
     ]
   );
 
@@ -149,6 +172,37 @@ const Transactions = () => {
                 })) || []),
               ]}
             />
+            <Select
+              value={categoryFilter}
+              onChange={(val) => {
+                setCategoryFilter(val ?? "");
+                setSubcategoryFilter("");
+              }}
+              options={[
+                { label: "All Categories", value: "" },
+                ...(Object.keys(availableCategories?.categories ?? {}).map(
+                  (category) => ({
+                    label: category,
+                    value: category,
+                  })
+                ) || []),
+              ]}
+            />
+            <Select
+              value={subcategoryFilter}
+              onChange={(val) => setSubcategoryFilter(val ?? "")}
+              disabled={categoryFilter === ""}
+              options={[
+                { label: "All Subcategories", value: "" },
+                ...(availableCategories?.categories[categoryFilter]?.map(
+                  (category) => ({
+                    label: category,
+                    value: category,
+                  })
+                ) || []),
+              ]}
+            />
+
             <Input
               placeholder="Search description..."
               value={descriptionFilter}
@@ -175,91 +229,94 @@ const Transactions = () => {
           </DashboardGrid>
         </FlexWrapper>
 
-        {loading && <Loader text="Loading transactions..." />}
+        {loading && <Skeleton width="100%" height="475px" />}
         {alert && <Alert {...alert} />}
 
-        {walletData && (
-          <>
-            <Table
-              headers={[
-                "No.",
-                "Date",
-                "Type",
-                "Amount",
-                "Balance",
-                "Total Balance",
-                "Category",
-                "Subcategory",
-                "Description",
-                "Bank",
-              ]}
-              scrollable
-            >
-              {walletData.transactions.map((tx, i) => (
-                <tr key={i}>
-                  <td>
-                    {i + 1 + (page - 1) * walletData.pagination.page_size}
-                  </td>
-                  <td>{formatDateTime(tx.date)}</td>
-                  <td>{tx.type ?? "-"}</td>
-                  <td
-                    style={{
-                      color:
-                        tx.amount >= 0
-                          ? colors.charts.profit
-                          : colors.charts.loss,
-                    }}
-                  >
-                    {formatNumber(tx.amount)}
-                  </td>
-                  <td>
-                    {tx.balance !== null ? formatNumber(tx.balance) : "-"}
-                  </td>
-                  <td>
-                    {tx.unified_balance !== null
-                      ? formatNumber(tx.unified_balance)
-                      : "-"}
-                  </td>
-                  <td>
-                    {tx.category && (
-                      <CategoryCell category={tx.category}>
-                        {tx.category}
-                      </CategoryCell>
-                    )}
-                  </td>
-                  <td>
-                    {tx.subcategory ? (
-                      <SubcategoryCell>{tx.subcategory}</SubcategoryCell>
-                    ) : (
-                      tx.type && <SubcategoryCell>{tx.type}</SubcategoryCell>
-                    )}
-                  </td>
-                  <DescriptionCell>{tx.description}</DescriptionCell>
-                  <td>{tx.source_bank}</td>
-                </tr>
-              ))}
-            </Table>
-            <GappedDiv>
-              <Button
-                variant="secondary"
-                disabled={page <= 1}
-                onClick={() => fetchWallet(page - 1)}
+        {walletData?.transactions &&
+          (walletData?.transactions.length !== 0 ? (
+            <>
+              <Table
+                headers={[
+                  "No.",
+                  "Date",
+                  "Type",
+                  "Amount",
+                  "Balance",
+                  "Total Balance",
+                  "Category",
+                  "Subcategory",
+                  "Description",
+                  "Bank",
+                ]}
+                scrollable
               >
-                Previous
-              </Button>
-              <PagesContainer>
-                Page {page} of {walletData.pagination.total_pages}
-              </PagesContainer>
-              <Button
-                variant="secondary"
-                disabled={page >= walletData.pagination.total_pages}
-                onClick={() => fetchWallet(page + 1)}
-              >
-                Next
-              </Button>
-            </GappedDiv>
-          </>
-        )}
+                {walletData.transactions.map((tx, i) => (
+                  <tr key={i}>
+                    <td>
+                      {i + 1 + (page - 1) * walletData.pagination.page_size}
+                    </td>
+                    <td>{formatDateTime(tx.date)}</td>
+                    <td>{tx.type ?? "-"}</td>
+                    <td
+                      style={{
+                        color:
+                          tx.amount >= 0
+                            ? colors.charts.profit
+                            : colors.charts.loss,
+                      }}
+                    >
+                      {formatNumber(tx.amount)}
+                    </td>
+                    <td>
+                      {tx.balance !== null ? formatNumber(tx.balance) : "-"}
+                    </td>
+                    <td>
+                      {tx.unified_balance !== null
+                        ? formatNumber(tx.unified_balance)
+                        : "-"}
+                    </td>
+                    <td>
+                      {tx.category && (
+                        <CategoryCell category={tx.category}>
+                          {tx.category}
+                        </CategoryCell>
+                      )}
+                    </td>
+                    <td>
+                      {tx.subcategory ? (
+                        <SubcategoryCell>{tx.subcategory}</SubcategoryCell>
+                      ) : (
+                        tx.type && <SubcategoryCell>{tx.type}</SubcategoryCell>
+                      )}
+                    </td>
+                    <DescriptionCell>{tx.description}</DescriptionCell>
+                    <td>{tx.source_bank}</td>
+                  </tr>
+                ))}
+              </Table>
+              <GappedDiv>
+                <Button
+                  variant="secondary"
+                  disabled={page <= 1}
+                  onClick={() => fetchWallet(page - 1)}
+                >
+                  Previous
+                </Button>
+                <PagesContainer>
+                  Page {page} of {walletData.pagination.total_pages}
+                </PagesContainer>
+                <Button
+                  variant="secondary"
+                  disabled={page >= walletData.pagination.total_pages}
+                  onClick={() => fetchWallet(page + 1)}
+                >
+                  Next
+                </Button>
+              </GappedDiv>
+            </>
+          ) : (
+            <span>No results found.</span>
+          ))}
       </FlexWrapper>
     </>
   );
