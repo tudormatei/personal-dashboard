@@ -53,6 +53,7 @@ def get_transactions(
     end_date: Optional[str] = None,
     bank: Optional[str] = None,
     description: Optional[str] = None,
+    order: Optional[str] = None,
     page: int = Query(1, ge=1),
     page_size: int = Query(50, ge=1, le=200),
 ) -> TransactionsResponse | None:
@@ -64,6 +65,7 @@ def get_transactions(
         end_date=end_date,
         bank=bank,
         description=description,
+        order=order,
         page=page,
         page_size=page_size,
     )

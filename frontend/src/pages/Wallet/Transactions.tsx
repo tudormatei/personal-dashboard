@@ -19,6 +19,7 @@ import {
   CategoryCell,
   DescriptionCell,
   PagesContainer,
+  SortButton,
   SubcategoryCell,
 } from "./Wallet.styled";
 
@@ -44,8 +45,13 @@ const Transactions = () => {
     formatDate(new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000))
   );
   const [walletEndDate, setWalletEndDate] = useState(formatDate(today));
+  const [sortOrder, setSortOrder] = useState("asc");
   const [page, setPage] = useState(1);
   const [getAll, setGetAll] = useState(true);
+
+  const toggleSortOrder = () => {
+    setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+  };
 
   useEffect(() => {
     const fetchBanks = async () => {
@@ -73,6 +79,7 @@ const Transactions = () => {
       if (walletEndDate && !getAll) params.set("end_date", walletEndDate);
       if (descriptionFilter) params.set("description", descriptionFilter);
       if (sourceBankFilter) params.set("bank", sourceBankFilter);
+      params.set("order", sortOrder);
       params.set("page", pageNumber.toString());
 
       try {
@@ -93,8 +100,13 @@ const Transactions = () => {
       descriptionFilter,
       sourceBankFilter,
       getAll,
+      sortOrder,
     ]
   );
+
+  useEffect(() => {
+    fetchWallet();
+  }, [fetchWallet]);
 
   return (
     <>
@@ -142,7 +154,24 @@ const Transactions = () => {
               value={descriptionFilter}
               onChange={(e) => setDescriptionFilter(e.target.value)}
             />
-            <Button onClick={() => fetchWallet(1)}>Apply</Button>
+            <SortButton active={sortOrder === "desc"} onClick={toggleSortOrder}>
+              {sortOrder === "asc" ? "Ascending" : "Descending"}
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12 4V20M12 20L5 13M12 20L19 13"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </SortButton>
           </DashboardGrid>
         </FlexWrapper>
 

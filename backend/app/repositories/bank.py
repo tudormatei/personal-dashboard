@@ -65,6 +65,7 @@ def get_bank_records(
     start_date=None,
     end_date=None,
     description=None,
+    order: str = "asc",
     page: int | None = 1,
     page_size: int | None = 50,
 ):
@@ -94,16 +95,20 @@ def get_bank_records(
         query += " AND description LIKE ?"
         params.append(f"%{description}%")
 
+    order = order.lower()
+    if order not in ("asc", "desc"):
+        order = "asc"
+
     count_query = f"SELECT COUNT(*) FROM ({query})"
     cur.execute(count_query, params)
     total_count = cur.fetchone()[0]
 
     if page is not None and page_size is not None:
         offset = (page - 1) * page_size
-        query += " ORDER BY date, orig_index LIMIT ? OFFSET ?"
+        query += f" ORDER BY date {order}, orig_index {order} LIMIT ? OFFSET ?"
         cur.execute(query, params + [page_size, offset])
     else:
-        query += " ORDER BY date, orig_index"
+        query += f" ORDER BY date {order}, orig_index {order}"
         cur.execute(query, params)
 
     rows = cur.fetchall()

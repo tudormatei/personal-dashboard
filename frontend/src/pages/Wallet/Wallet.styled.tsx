@@ -1,5 +1,12 @@
 import styled from "@emotion/styled";
-import { colors, radii, typography } from "../../constants/styling";
+import {
+  colors,
+  radii,
+  shadows,
+  spacing,
+  transitions,
+  typography,
+} from "../../constants/styling";
 
 type CategoryCellProps = {
   category?: string;
@@ -54,4 +61,39 @@ export const DescriptionCell = styled.td`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+`;
+
+export const SortButton = styled.button<{ active?: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: ${spacing.xs};
+  background: ${({ active }) => (active ? colors.accent : colors.surfaceAlt)};
+  color: ${({ active }) => (active ? colors.background : colors.textPrimary)};
+  border: 1px solid ${({ active }) => (active ? colors.accent : colors.border)};
+  border-radius: ${radii.md};
+  padding: ${spacing.sm} ${spacing.md};
+  font-family: ${typography.fontFamily};
+  font-size: ${typography.fontSize.sm};
+  font-weight: ${typography.fontWeight.medium};
+  cursor: pointer;
+  transition: ${transitions.base};
+  box-shadow: ${({ active }) => (active ? shadows.soft : shadows.none)};
+
+  &:hover {
+    background: ${colors.accent};
+    color: ${colors.background};
+    box-shadow: ${shadows.soft};
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+    transition: transform 0.2s ease;
+    transform: ${({ active }) => (active ? "rotate(180deg)" : "none")};
+  }
 `;

@@ -292,6 +292,7 @@ def get_bank_transactions(
     end_date=None,
     bank=None,
     description=None,
+    order=None,
     page=1,
     page_size=50,
 ):
@@ -300,6 +301,7 @@ def get_bank_transactions(
         end_date=end_date,
         source_bank=bank,
         description=description,
+        order=order,
         page=page,
         page_size=page_size,
     )
