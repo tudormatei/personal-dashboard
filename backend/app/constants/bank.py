@@ -109,9 +109,9 @@ TRANSACTION_CATEGORIES = {
             "GBTWENTE",
         },
         "Bank": {"Kosten OranjePakket"},
-        "Rent": {" rent "},
+        "Rent": {" rent ", "harveer"},
         "Utilities": {
-            "gas",
+            " gas ",
             "electric",
             "internet",
             "water",

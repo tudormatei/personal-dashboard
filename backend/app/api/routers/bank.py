@@ -90,3 +90,4 @@ def get_available() -> BanksResponse:
 @router.get("/summary")
 def summary(aggregate_days: Optional[int] = None) -> SummaryResponse | None:
     return get_full_summary(aggregate_days)
+

@@ -61,6 +61,8 @@ export const DescriptionCell = styled.td`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  position: relative;
+  cursor: help;
 `;
 
 export const SortButton = styled.button<{ active?: boolean }>`
@@ -95,4 +97,42 @@ export const SortButton = styled.button<{ active?: boolean }>`
     transition: transform 0.2s ease;
     transform: ${({ active }) => (active ? "rotate(180deg)" : "none")};
   }
+`;
+
+export const ChartsRow = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 18px;
+  margin-top: 18px;
+`;
+
+export const LeftColumn = styled.div``;
+export const RightColumn = styled.div``;
+
+export const ChartCard = styled.div`
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(20, 20, 40, 0.04);
+`;
+
+export const ControlsRow = styled.div`
+  display: flex;
+  gap: 8px;
+  align-items: center;
+`;
+
+export const RecurringList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+export const RecurringItem = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #fafafa;
 `;

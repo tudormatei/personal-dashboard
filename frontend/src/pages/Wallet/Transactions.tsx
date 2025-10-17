@@ -289,7 +289,9 @@ const Transactions = () => {
                         tx.type && <SubcategoryCell>{tx.type}</SubcategoryCell>
                       )}
                     </td>
-                    <DescriptionCell>{tx.description}</DescriptionCell>
+                    <DescriptionCell title={tx.description || ""}>
+                      {tx.description}
+                    </DescriptionCell>
                     <td>{tx.source_bank}</td>
                   </tr>
                 ))}

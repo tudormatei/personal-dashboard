@@ -1,4 +1,5 @@
 import { H2 } from "../../components/Typography/Headings";
+import Analytics from "./Analytics";
 import Summary from "./Summary";
 import Transactions from "./Transactions";
 
@@ -9,6 +10,7 @@ const Wallet = () => {
 
       <Summary />
       <Transactions />
+      <Analytics />
     </>
   );
 };
