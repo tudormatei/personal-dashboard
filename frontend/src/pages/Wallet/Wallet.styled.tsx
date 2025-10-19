@@ -57,7 +57,7 @@ export const SubcategoryCell = styled.span`
 `;
 
 export const DescriptionCell = styled.td`
-  max-width: 700px;
+  max-width: 500px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -99,29 +99,6 @@ export const SortButton = styled.button<{ active?: boolean }>`
   }
 `;
 
-export const ChartsRow = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 380px;
-  gap: 18px;
-  margin-top: 18px;
-`;
-
-export const LeftColumn = styled.div``;
-export const RightColumn = styled.div``;
-
-export const ChartCard = styled.div`
-  background: #fff;
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 4px 12px rgba(20, 20, 40, 0.04);
-`;
-
-export const ControlsRow = styled.div`
-  display: flex;
-  gap: 8px;
-  align-items: center;
-`;
-
 export const RecurringList = styled.div`
   display: flex;
   flex-direction: column;
@@ -134,5 +111,4 @@ export const RecurringItem = styled.div`
   align-items: center;
   padding: 8px 10px;
   border-radius: 8px;
-  background: #fafafa;
 `;

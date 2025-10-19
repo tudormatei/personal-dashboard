@@ -3,6 +3,9 @@ from fastapi import APIRouter, HTTPException, Query, UploadFile, File, status
 
 from ...utils.validation import validate_iso_date
 from ...services.bank import (
+    compute_categories_pie,
+    compute_recurring_transactions,
+    compute_top_categories,
     get_bank_transactions,
     get_distinct_banks,
     get_full_summary,
@@ -11,8 +14,11 @@ from ...services.bank import (
 )
 from ...schemas.bank import (
     BanksResponse,
+    CategoriesPieResponse,
     CategoriesResponse,
+    RecurringResponse,
     SummaryResponse,
+    TopCategoriesResponse,
     TransactionsResponse,
     UploadResponse,
 )
@@ -91,3 +97,39 @@ def get_available() -> BanksResponse:
 def summary(aggregate_days: Optional[int] = None) -> SummaryResponse | None:
     return get_full_summary(aggregate_days)
 
+
+@router.get("/categories-pie")
+def get_categories_pie(
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    bank: Optional[str] = None,
+) -> CategoriesPieResponse | None:
+    validate_iso_date(start_date, "start_date")
+    validate_iso_date(end_date, "end_date")
+
+    return compute_categories_pie(start_date, end_date, bank)
+
+
+@router.get("/top-categories")
+def get_top_categories(
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    bank: Optional[str] = None,
+) -> TopCategoriesResponse | None:
+    validate_iso_date(start_date, "start_date")
+    validate_iso_date(end_date, "end_date")
+
+    return compute_top_categories(start_date, end_date, bank)
+
+
+@router.get("/recurring")
+def get_recurring_transactions(
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    bank: Optional[str] = None,
+    min_occurrences: int = 2,
+) -> RecurringResponse | None:
+    validate_iso_date(start_date, "start_date")
+    validate_iso_date(end_date, "end_date")
+
+    return compute_recurring_transactions(start_date, end_date, bank, min_occurrences)

@@ -2,11 +2,9 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { SubHeader } from "../../components/Typography/Headings";
 import { DashboardGrid, FlexWrapper } from "../../components/Layout/Layout";
 import Input from "../../components/Input/Input";
-import Select from "../../components/Select/Select";
 import Button from "../../components/Button/Button";
-import Skeleton from "../../components/Skeleton/Skeleton";
 import Alert from "../../components/Alert/Alert";
-import { colors } from "../../constants/styling";
+import { colors, radii, spacing } from "../../constants/styling";
 
 import {
   ResponsiveContainer,
@@ -22,57 +20,23 @@ import {
   CartesianGrid,
   LabelList,
 } from "recharts";
-import {
-  ChartCard,
-  ChartsRow,
-  LeftColumn,
-  RecurringItem,
-  RecurringList,
-  RightColumn,
-} from "./Wallet.styled";
+import { RecurringItem, RecurringList } from "./Wallet.styled";
+import type { operations } from "../../types/api-routes";
+import Loader from "../../components/Loader/Loader";
+import type { AlertData } from "../../types/types";
 
-type PieResponse = {
-  categories: {
-    category: string;
-    subcategory?: string;
-    value: number;
-  }[];
-};
+type CategoriesPieResponse =
+  operations["get_categories_pie_api_bank_categories_pie_get"]["responses"][200]["content"]["application/json"];
 
-type TopCategory = {
-  category: string;
-  amount_current: number;
-  amount_prev: number;
-  percent_change: number | null;
-};
+type TopCategoriesResponse =
+  operations["get_top_categories_api_bank_top_categories_get"]["responses"][200]["content"]["application/json"];
 
-type RecurringTx = {
-  description: string;
-  avg_amount: number;
-  occurrences: number;
-  frequency: string; // monthly, weekly, biweekly
-  sample_dates: string[];
-};
-
-const COLORS = [
-  "#4e79a7",
-  "#f28e2b",
-  "#e15759",
-  "#76b7b2",
-  "#59a14f",
-  "#edc949",
-  "#af7aa1",
-  "#ff9da7",
-  "#9c755f",
-  "#bab0ab",
-];
+type RecurringResponse =
+  operations["get_recurring_transactions_api_bank_recurring_get"]["responses"][200]["content"]["application/json"];
 
 const Analytics: React.FC = () => {
   const [loading, setLoading] = useState(false);
-  const [alert, setAlert] = useState<{
-    text: string;
-    type: "error" | "info";
-  } | null>(null);
+  const [alert, setAlert] = useState<AlertData | null>(null);
 
   const today = new Date();
   const formatDate = (d: Date) => d.toISOString().split("T")[0];
@@ -81,65 +45,55 @@ const Analytics: React.FC = () => {
     formatDate(new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000))
   );
   const [endDate, setEndDate] = useState(formatDate(today));
-  const [bankFilter, setBankFilter] = useState("");
-
-  const [pieData, setPieData] = useState<PieResponse | null>(null);
-  const [topCategories, setTopCategories] = useState<TopCategory[] | null>(
-    null
-  );
-  const [recurring, setRecurring] = useState<RecurringTx[] | null>(null);
+  const [getAll, setGetAll] = useState(true);
+  const [pieData, setPieData] = useState<CategoriesPieResponse>();
+  const [topCategories, setTopCategories] = useState<TopCategoriesResponse>();
+  const [recurring, setRecurring] = useState<RecurringResponse>();
 
   const fetchPie = useCallback(async () => {
     setLoading(true);
     setAlert(null);
     try {
       const params = new URLSearchParams();
-      if (startDate) params.set("start_date", startDate);
-      if (endDate) params.set("end_date", endDate);
-      if (bankFilter) params.set("bank", bankFilter);
-      const res = await fetch(
-        `/api/analytics/categories-pie?${params.toString()}`
-      );
-      const json = await res.json();
+      if (startDate && !getAll) params.set("start_date", startDate);
+      if (endDate && !getAll) params.set("end_date", endDate);
+      const res = await fetch(`/api/bank/categories-pie?${params.toString()}`);
+      const json = (await res.json()) as CategoriesPieResponse;
       setPieData(json);
     } catch {
       setAlert({ text: "Failed to fetch pie data", type: "error" });
     } finally {
       setLoading(false);
     }
-  }, [startDate, endDate, bankFilter]);
+  }, [startDate, endDate, getAll]);
 
   const fetchTop = useCallback(async () => {
     setLoading(true);
     setAlert(null);
     try {
       const params = new URLSearchParams();
-      if (startDate) params.set("start_date", startDate);
-      if (endDate) params.set("end_date", endDate);
-      if (bankFilter) params.set("bank", bankFilter);
-      const res = await fetch(
-        `/api/analytics/top-categories?${params.toString()}`
-      );
-      const json = await res.json();
-      setTopCategories(json.top);
+      if (startDate && !getAll) params.set("start_date", startDate);
+      if (endDate && !getAll) params.set("end_date", endDate);
+      const res = await fetch(`/api/bank/top-categories?${params.toString()}`);
+      const json = (await res.json()) as TopCategoriesResponse;
+      setTopCategories(json);
     } catch {
       setAlert({ text: "Failed to fetch top categories", type: "error" });
     } finally {
       setLoading(false);
     }
-  }, [startDate, endDate, bankFilter]);
+  }, [startDate, endDate, getAll]);
 
   const fetchRecurring = useCallback(async () => {
     setLoading(true);
     setAlert(null);
     try {
       const params = new URLSearchParams();
-      if (startDate) params.set("start_date", startDate);
-      if (endDate) params.set("end_date", endDate);
-      if (bankFilter) params.set("bank", bankFilter);
-      const res = await fetch(`/api/analytics/recurring?${params.toString()}`);
-      const json = await res.json();
-      setRecurring(json.recurring);
+      if (startDate && !getAll) params.set("start_date", startDate);
+      if (endDate && !getAll) params.set("end_date", endDate);
+      const res = await fetch(`/api/bank/recurring?${params.toString()}`);
+      const json = (await res.json()) as RecurringResponse;
+      setRecurring(json);
     } catch {
       setAlert({
         text: "Failed to fetch recurring transactions",
@@ -148,7 +102,7 @@ const Analytics: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [startDate, endDate, bankFilter]);
+  }, [startDate, endDate, getAll]);
 
   useEffect(() => {
     fetchPie();
@@ -156,178 +110,199 @@ const Analytics: React.FC = () => {
     fetchRecurring();
   }, [fetchPie, fetchTop, fetchRecurring]);
 
-  // const totalSpent = useMemo(() => {
-  //   if (!pieData) return 0;
-  //   return pieData.categories.reduce((s, c) => s + c.value, 0);
-  // }, [pieData]);
-
-  const totalSpent = 2;
+  const totalSpent = useMemo(() => {
+    if (!pieData) return 0;
+    return pieData.categories.reduce((s, c) => s + c.value, 0);
+  }, [pieData]);
 
   return (
-    <div>
+    <>
       <FlexWrapper>
         <SubHeader>Analytics</SubHeader>
         <DashboardGrid>
+          <Button
+            variant="secondary"
+            onClick={() => setGetAll((prev) => !prev)}
+          >
+            {getAll ? "Custom Date" : "All"}
+          </Button>
           <Input
             type="date"
+            disabled={getAll}
+            placeholder="Start Date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
           />
           <Input
             type="date"
+            disabled={getAll}
+            placeholder="End Date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
           />
-          <Select
-            value={bankFilter}
-            onChange={(val) => setBankFilter(val ?? "")}
-            options={[{ label: "All Banks", value: "" }]}
-            // extend the select to fetch banks from /api/bank if you like
-          />
-          <Button
-            onClick={() => {
-              fetchPie();
-              fetchTop();
-              fetchRecurring();
-            }}
-          >
-            Refresh
-          </Button>
         </DashboardGrid>
       </FlexWrapper>
 
-      {loading && <Skeleton width="100%" height="380px" />}
+      {loading && <Loader text="Loading analytics..." />}
       {alert && <Alert {...alert} />}
 
-      <ChartsRow>
-        <LeftColumn>
-          <ChartCard>
-            <h3>Spending by Category</h3>
-            <p style={{ marginTop: 4, marginBottom: 12 }}>
-              Total spent: {totalSpent.toFixed(2)}
-            </p>
-            <div style={{ width: "100%", height: 320 }}>
-              <ResponsiveContainer>
-                <PieChart>
-                  <Pie
-                    dataKey="value"
-                    data={pieData?.categories || []}
-                    nameKey={(d) =>
-                      `${d.category}${
-                        d.subcategory ? ` - ${d.subcategory}` : ""
-                      }`
+      <FlexWrapper row>
+        <FlexWrapper style={{ width: "40%" }}>
+          <span style={{ textAlign: "center" }}>
+            Total spent: {totalSpent.toFixed(2)}
+          </span>
+          <ResponsiveContainer height={350}>
+            <PieChart>
+              <Pie
+                dataKey="value"
+                data={pieData?.categories || []}
+                nameKey={(d) =>
+                  `${d.category}${d.subcategory ? ` - ${d.subcategory}` : ""}`
+                }
+                outerRadius={100}
+                innerRadius={60}
+                stroke="none"
+                label={(entry) =>
+                  `${entry.category}${
+                    entry.subcategory ? ` / ${entry.subcategory}` : ""
+                  }`
+                }
+              >
+                {(pieData?.categories || []).map((val, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={
+                      colors.categories[
+                        val.category as keyof typeof colors.categories
+                      ]
                     }
-                    innerRadius={60}
-                    outerRadius={110}
-                    paddingAngle={2}
-                    label={(entry) =>
-                      `${entry.category}${
-                        entry.subcategory ? ` / ${entry.subcategory}` : ""
-                      }`
-                    }
-                  >
-                    {(pieData?.categories || []).map((_, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={COLORS[index % COLORS.length]}
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    formatter={(value: number) => `${value.toFixed(2)}`}
                   />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </ChartCard>
+                ))}
+              </Pie>
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: colors.charts.tooltipBg,
+                  border: `1px solid ${colors.charts.tooltipBg}`,
+                  borderRadius: radii.md,
+                  padding: spacing.sm,
+                }}
+                itemStyle={{ color: colors.charts.tooltipText }}
+                formatter={(value: number, name: string) => {
+                  const percentage = ((value / totalSpent) * 100).toFixed(2);
+                  return [`${value} (${percentage}%)`, name];
+                }}
+              />
+              <Legend
+                wrapperStyle={{
+                  color: colors.textPrimary,
+                  marginTop: spacing.sm,
+                }}
+                iconType="circle"
+                layout="horizontal"
+                verticalAlign="bottom"
+                align="center"
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        </FlexWrapper>
+        <FlexWrapper style={{ width: "60%" }}>
+          <span
+            style={{
+              textAlign: "center",
+            }}
+          >
+            {`Top 5 Spending Categories (${new Date(endDate).toLocaleDateString(
+              "en-US",
+              { month: "long", year: "numeric" }
+            )})`}
+          </span>
 
-          <ChartCard style={{ marginTop: 18 }}>
-            <h3>Top 5 Spending Categories</h3>
-            <div style={{ width: "100%", height: 260 }}>
-              <ResponsiveContainer>
-                <BarChart
-                  data={topCategories || []}
-                  layout="vertical"
-                  margin={{ left: 20, right: 20 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" />
-                  <YAxis dataKey="category" type="category" width={140} />
-                  <Tooltip />
-                  <Bar dataKey="amount_current" name="This period">
-                    <LabelList dataKey="amount_current" position="right" />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-              <div style={{ marginTop: 8 }}>
-                {(topCategories || []).map((t) => (
-                  <div
-                    key={t.category}
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      marginTop: 6,
-                    }}
-                  >
-                    <div>{t.category}</div>
-                    <div style={{ textAlign: "right" }}>
-                      <div>{t.amount_current.toFixed(2)}</div>
-                      <div
-                        style={{
-                          fontSize: 12,
-                          color:
-                            t.percent_change === null
-                              ? "#666"
-                              : t.percent_change >= 0
-                              ? colors.charts.loss
-                              : colors.charts.profit,
-                        }}
-                      >
-                        {t.percent_change === null
-                          ? "n/a"
-                          : `${t.percent_change.toFixed(1)}% vs prev`}
-                      </div>
+          <ResponsiveContainer height={350}>
+            <BarChart
+              data={topCategories?.top_categories || []}
+              layout="vertical"
+              margin={{ left: 20, right: 20 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis type="number" />
+              <YAxis dataKey="category" type="category" width={140} />
+              <Tooltip />
+              <Bar dataKey="amount_current" name="This period" fill="#3b82f6">
+                <LabelList dataKey="amount_current" position="right" />
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </FlexWrapper>
+      </FlexWrapper>
+      <FlexWrapper row>
+        <FlexWrapper style={{ width: "50%" }}>
+          <span style={{ textAlign: "center" }}>Recurring Transactions</span>
+          <RecurringList>
+            {recurring && recurring.recurring.length > 0 ? (
+              recurring.recurring.map((r) => (
+                <RecurringItem key={r.description}>
+                  <div>
+                    <strong>{r.description}</strong>
+                    <div style={{ fontSize: 12, color: "#666" }}>
+                      {r.frequency} • {r.occurrences.length} occurrences
                     </div>
                   </div>
-                ))}
+                  <div style={{ textAlign: "right" }}>
+                    <div>{r.avg_amount.toFixed(2)}</div>
+                  </div>
+                </RecurringItem>
+              ))
+            ) : (
+              <div>No recurring transactions detected</div>
+            )}
+          </RecurringList>
+        </FlexWrapper>
+        <FlexWrapper style={{ width: "50%" }}>
+          {(topCategories?.top_categories || []).map((t) => (
+            <div
+              key={t.category}
+              style={{
+                marginTop: 12,
+                padding: "10px 12px",
+                border: "1px solid #e0e0e0",
+                borderRadius: 8,
+                boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <div style={{ fontWeight: "bold" }}>{t.category}</div>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontSize: 15 }}>
+                    {t.amount_current.toFixed(2)}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color:
+                        t.percent_change === null
+                          ? "#666"
+                          : t.percent_change >= 0
+                          ? colors.charts.loss
+                          : colors.charts.profit,
+                    }}
+                  >
+                    {t.percent_change === null
+                      ? "n/a"
+                      : `${t.percent_change.toFixed(1)}% vs prev`}
+                  </div>
+                </div>
               </div>
             </div>
-          </ChartCard>
-        </LeftColumn>
-
-        <RightColumn>
-          <ChartCard>
-            <h3>Recurring Transactions</h3>
-            <p style={{ marginTop: 4, marginBottom: 12 }}>
-              Detected recurring transactions (based on description + frequency)
-            </p>
-            <RecurringList>
-              {recurring && recurring.length > 0 ? (
-                recurring.map((r) => (
-                  <RecurringItem key={r.description}>
-                    <div>
-                      <strong>{r.description}</strong>
-                      <div style={{ fontSize: 12, color: "#666" }}>
-                        {r.frequency} • {r.occurrences} occurrences
-                      </div>
-                    </div>
-                    <div style={{ textAlign: "right" }}>
-                      <div>{r.avg_amount.toFixed(2)}</div>
-                      <div style={{ fontSize: 12, color: "#666" }}>
-                        {r.sample_dates.slice(0, 3).join(", ")}
-                      </div>
-                    </div>
-                  </RecurringItem>
-                ))
-              ) : (
-                <div>No recurring transactions detected</div>
-              )}
-            </RecurringList>
-          </ChartCard>
-        </RightColumn>
-      </ChartsRow>
-    </div>
+          ))}
+        </FlexWrapper>
+      </FlexWrapper>
+    </>
   );
 };
 

@@ -12,14 +12,15 @@ export const colors = {
   info: "#00bfff",
 
   categories: {
-    Food: "#d98b48",
-    "Health & Fitness": "#6bcf89",
-    Travel: "#5ea7d7",
-    Transport: "#9b7fe6",
-    Shopping: "#e06b6b",
-    Entertainment: "#d4b65e",
-    Career: "#5ac6d4",
-    Bills: "#a1846a",
+    Food: "#ff8c00",
+    "Health & Fitness": "#4caf50",
+    Travel: "#2196f3",
+    Transport: "#ff5252",
+    Shopping: "#ffca28",
+    Entertainment: "#00bcd4",
+    Career: "#9c27b0",
+    Bills: "#795548",
+    Other: "#7e6affff",
   },
 
   charts: {

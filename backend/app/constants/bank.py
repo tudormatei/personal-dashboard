@@ -36,11 +36,6 @@ TRANSACTION_CATEGORIES = {
         "Cafe": {"Bubble Tea", "cafea", "coffee", "FIVE TO GO", "starbucks"},
         "Online Ordering": {"glovo"},
     },
-    "Health & Fitness": {
-        "Supplements": {"myprotein", "bulk", "Medikamente"},
-        "Personal Care": {"BARBERSHOP", "TOPVORM"},
-        "GYM": {"world class", "1WVJ7W", "SPORTCENTRUM", "BigGym", "Gym"},
-    },
     "Travel": {
         "Flights": {"klm", "1WVJ7W"},
         "Vacation": {
@@ -99,6 +94,11 @@ TRANSACTION_CATEGORIES = {
         "Gaming": {"steam", "riot", "kinguin", "g2a", "Gamivo"},
     },
     "Career": {"Courses": {"coursera", "LEETCODE"}},
+    "Health & Fitness": {
+        "Supplements": {"myprotein", "bulk", "Medikamente"},
+        "Personal Care": {"BARBERSHOP", "TOPVORM"},
+        "GYM": {"world class", "1WVJ7W", "SPORTCENTRUM", "BigGym", "Gym"},
+    },
     "Bills": {
         "Tech": {"Hostico", "AWESOME PROJECTS", "Sitebunker"},
         "Insurence": {"AON"},

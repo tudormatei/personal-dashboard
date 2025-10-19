@@ -132,7 +132,6 @@ const Transactions = () => {
   }, [fetchWallet]);
 
   return (
-    <>
       <FlexWrapper>
         <SubHeader>Transactions</SubHeader>
         <FlexWrapper>
@@ -320,7 +319,6 @@ const Transactions = () => {
             <span>No results found.</span>
           ))}
       </FlexWrapper>
-    </>
   );
 };
 

@@ -68,3 +68,58 @@ class SummaryTotals(BaseModel):
 class SummaryResponse(BaseModel):
     summary: SummaryTotals
     chart_data: List[CashFlowPoint]
+
+
+# Analytics
+
+
+class CategoryBreakdown(BaseModel):
+    category: str
+    subcategory: Optional[str] = None
+    value: float
+    percentage: float
+
+
+class CategoriesPieResponse(BaseModel):
+    categories: List[CategoryBreakdown]
+    total_spent: float
+
+
+class WeeklySpending(BaseModel):
+    week_start: str
+    amount: float
+
+
+class CategoryTrend(BaseModel):
+    category: str
+    amount_current: float
+    amount_prev: float
+    percent_change: Optional[float]
+    weekly_distribution: List[WeeklySpending] = []
+
+
+class TrendPeriod(BaseModel):
+    current: str
+    previous: str
+
+
+class TopCategoriesResponse(BaseModel):
+    period: TrendPeriod
+    top_categories: List[CategoryTrend]
+
+
+class RecurringTransactionPoint(BaseModel):
+    date: date
+    amount: float
+    description: str
+
+
+class RecurringTransaction(BaseModel):
+    description: str
+    avg_amount: float
+    occurrences: List[RecurringTransactionPoint]
+    frequency: Optional[str] = None
+
+
+class RecurringResponse(BaseModel):
+    recurring: List[RecurringTransaction]

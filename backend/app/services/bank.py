@@ -5,6 +5,20 @@ from typing import List
 import pandas as pd
 import csv
 import os
+from rapidfuzz import process, fuzz
+import numpy as np
+
+from ..schemas.bank import (
+    CategoriesPieResponse,
+    CategoryBreakdown,
+    CategoryTrend,
+    RecurringResponse,
+    RecurringTransaction,
+    RecurringTransactionPoint,
+    TopCategoriesResponse,
+    TrendPeriod,
+    WeeklySpending,
+)
 
 from ..repositories.bank import get_all_banks, get_bank_records, insert_bank_records
 
@@ -470,3 +484,204 @@ def get_full_summary(aggregate_days):
         "summary": summary,
         "chart_data": chart_data,
     }
+
+
+def compute_categories_pie(start_date, end_date, bank):
+    records, _ = get_bank_records(
+        start_date=start_date,
+        end_date=end_date,
+        source_bank=bank,
+        page=None,
+        page_size=None,
+    )
+    if not records:
+        return None
+
+    df = categorize_transactions(records)
+    df = df[df["amount"] < 0].copy()
+    df["value"] = df["amount"].abs()
+
+    grouped = df.groupby(["category"], as_index=False)["value"].sum()
+    total = grouped["value"].sum()
+
+    grouped["value"] = grouped["value"].round(2)
+    grouped["percentage"] = ((grouped["value"] / total) * 100).round(2)
+
+    categories = [
+        CategoryBreakdown(
+            category=row["category"],
+            subcategory=None,
+            value=float(row["value"]),
+            percentage=float(row["percentage"]),
+        )
+        for _, row in grouped.iterrows()
+    ]
+
+    return CategoriesPieResponse(
+        categories=categories, total_spent=float(total.round(2))
+    )
+
+
+def compute_top_categories(start_date, end_date, bank):
+    records, _ = get_bank_records(
+        start_date=start_date,
+        end_date=end_date,
+        source_bank=bank,
+        page=None,
+        page_size=None,
+    )
+    if not records:
+        return None
+
+    df = categorize_transactions(records)
+    df["date"] = pd.to_datetime(df["date"])
+    df["month"] = df["date"].dt.to_period("M")
+    df["abs_amount"] = df["amount"].apply(lambda x: abs(x) if x < 0 else 0)
+
+    monthly = df.groupby(["month", "category"], as_index=False)["abs_amount"].sum()
+    months = sorted(monthly["month"].unique())
+    if len(months) < 2:
+        return TopCategoriesResponse(
+            period=TrendPeriod(current=str(months[-1]), previous=""), top_categories=[]
+        )
+
+    latest, prev = months[-1], months[-2]
+    latest_df = monthly[monthly["month"] == latest]
+    prev_df = monthly[monthly["month"] == prev]
+
+    merged = pd.merge(
+        latest_df, prev_df, on="category", how="left", suffixes=("_current", "_prev")
+    ).fillna(0)
+
+    merged["percent_change"] = (
+        (merged["abs_amount_current"] - merged["abs_amount_prev"])
+        / merged["abs_amount_prev"].replace(0, 1)
+        * 100
+    ).round(1)
+
+    top5 = merged.nlargest(5, "abs_amount_current")
+
+    latest_month_df = df[df["month"] == latest].copy()
+    latest_month_df["week_start"] = (
+        latest_month_df["date"].dt.to_period("W").apply(lambda r: r.start_time)
+    )
+
+    weekly = (
+        latest_month_df.groupby(["category", "week_start"], as_index=False)[
+            "abs_amount"
+        ]
+        .sum()
+        .sort_values(["category", "week_start"])
+    )
+
+    top_categories = []
+    for _, row in top5.iterrows():
+        cat = row["category"]
+        weekly_cat = weekly[weekly["category"] == cat]
+
+        weekly_distribution = [
+            WeeklySpending(
+                week_start=w["week_start"].strftime("%Y-%m-%d"),
+                amount=float(w["abs_amount"]),
+            )
+            for _, w in weekly_cat.iterrows()
+        ]
+
+        top_categories.append(
+            CategoryTrend(
+                category=cat,
+                amount_current=float(row["abs_amount_current"]),
+                amount_prev=float(row["abs_amount_prev"]),
+                percent_change=(
+                    float(row["percent_change"])
+                    if row["abs_amount_prev"] != 0
+                    else None
+                ),
+                weekly_distribution=weekly_distribution,
+            )
+        )
+
+    return TopCategoriesResponse(
+        period=TrendPeriod(current=str(latest), previous=str(prev)),
+        top_categories=top_categories,
+    )
+
+
+def compute_recurring_transactions(start_date, end_date, bank, min_occurrences=2):
+    records, _ = get_bank_records(
+        start_date=start_date,
+        end_date=end_date,
+        source_bank=bank,
+        page=None,
+        page_size=None,
+    )
+    if not records:
+        return RecurringResponse(recurring=[])
+
+    df = categorize_transactions(records)
+    df["date"] = pd.to_datetime(df["date"])
+    df["amount"] = df["amount"].astype(float).round(2)
+
+    period_ranges = {
+        "weekly": (4, 12),
+        "biweekly": (10, 25),
+        "monthly": (20, 45),
+        "quarterly": (70, 120),
+        "yearly": (300, 430),
+    }
+
+    recurring_candidates = []
+
+    for (category, subcategory), group in df.groupby(["category", "subcategory"]):
+        if len(group) < min_occurrences:
+            continue
+
+        group = group.sort_values("date")
+        date_diffs = group["date"].diff().dt.days.dropna()
+
+        if len(date_diffs) < 2:
+            continue
+
+        avg_interval = date_diffs.mean()
+        std_interval = date_diffs.std()
+        rel_std = std_interval / avg_interval if avg_interval else np.inf
+
+        closest_period = None
+        for period, (low, high) in period_ranges.items():
+            if low <= avg_interval <= high:
+                closest_period = period
+                break
+
+        if rel_std > 1.2:
+            continue
+
+        if not closest_period:
+            continue
+
+        amt_std = group["amount"].std()
+        amt_rel_std = (
+            amt_std / abs(group["amount"].mean())
+            if abs(group["amount"].mean()) > 0
+            else 0
+        )
+
+        if amt_rel_std > 0.35:
+            continue
+
+        recurring_candidates.append(
+            RecurringTransaction(
+                description=f"{category} / {subcategory}",
+                occurrences=[
+                    RecurringTransactionPoint(
+                        date=row["date"],
+                        amount=row["amount"],
+                        description=row["description"],
+                    )
+                    for _, row in group.iterrows()
+                ],
+                avg_amount=round(group["amount"].mean(), 2),
+                frequency=closest_period,
+            )
+        )
+
+    return RecurringResponse(recurring=recurring_candidates)
