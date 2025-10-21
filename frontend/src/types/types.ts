@@ -4,3 +4,13 @@ export type AlertData = {
   text: string;
   type: AlertType;
 };
+
+export type CategoryName =
+  | "Food"
+  | "Health & Fitness"
+  | "Travel"
+  | "Transport"
+  | "Shopping"
+  | "Entertainment"
+  | "Career"
+  | "Bills";

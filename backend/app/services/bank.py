@@ -11,6 +11,7 @@ from ..schemas.bank import (
     CategoriesPieResponse,
     CategoryBreakdown,
     CategoryTrend,
+    RecurringCategoryGroup,
     RecurringResponse,
     RecurringTransaction,
     RecurringTransactionPoint,
@@ -704,12 +705,19 @@ def compute_recurring_transactions(
                 for _, row in sub.iterrows()
             ]
 
+            start_date = sub["date"].min().date()
+            end_date = sub["date"].max().date()
+            category = sub["category"].iloc[0] if "category" in sub.columns else "Other"
+
             recurring.append(
                 RecurringTransaction(
                     description=sub["description"].iloc[0],
                     avg_amount=round(amount_mean, 2),
                     occurrences=occurrences,
                     frequency=freq,
+                    category=category,
+                    start_date=start_date,
+                    end_date=end_date,
                 )
             )
 
@@ -717,4 +725,9 @@ def compute_recurring_transactions(
         recurring, key=lambda r: abs(r.avg_amount) * len(r.occurrences), reverse=True
     )
 
-    return RecurringResponse(recurring=recurring)
+    grouped = []
+    for cat, group in pd.DataFrame([r.dict() for r in recurring]).groupby("category"):
+        txs = [RecurringTransaction(**row) for row in group.to_dict(orient="records")]
+        grouped.append(RecurringCategoryGroup(category=cat, transactions=txs))
+
+    return RecurringResponse(recurring=grouped)

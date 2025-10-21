@@ -119,7 +119,15 @@ class RecurringTransaction(BaseModel):
     avg_amount: float
     occurrences: List[RecurringTransactionPoint]
     frequency: Optional[str] = None
+    category: Optional[str] = None
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
+
+
+class RecurringCategoryGroup(BaseModel):
+    category: str
+    transactions: List[RecurringTransaction]
 
 
 class RecurringResponse(BaseModel):
-    recurring: List[RecurringTransaction]
+    recurring: List[RecurringCategoryGroup]

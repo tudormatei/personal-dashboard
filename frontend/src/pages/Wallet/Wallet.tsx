@@ -1,7 +1,7 @@
 import { H2 } from "../../components/Typography/Headings";
-import Analytics from "./Analytics";
+import Analytics from "./Analytics/Analytics";
 import Summary from "./Summary";
-import Transactions from "./Transactions";
+import Transactions from "./Transactions/Transactions";
 
 const Wallet = () => {
   return (

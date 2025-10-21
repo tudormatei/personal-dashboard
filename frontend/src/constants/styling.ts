@@ -129,3 +129,34 @@ export const breakpoints = {
   desktop: "1280px",
   wide: "1536px",
 };
+
+export const chartStyles = {
+  grid: {
+    strokeDasharray: "3 3",
+    stroke: colors.charts.grid,
+  },
+  axis: {
+    stroke: colors.charts.axis,
+    label: {
+      angle: -90,
+      position: "insideLeft" as const,
+      offset: 0,
+      fill: colors.charts.axis,
+      style: { fontSize: "0.8rem" },
+    },
+  },
+  tooltip: {
+    backgroundColor: colors.charts.tooltipBg,
+    border: `1px solid ${colors.charts.tooltipBg}`,
+    borderRadius: radii.md,
+    padding: spacing.sm,
+    color: colors.charts.tooltipText,
+  },
+  line: {
+    stroke: colors.accent,
+    strokeWidth: 2,
+  },
+  bar: {
+    fill: colors.accent,
+  },
+};

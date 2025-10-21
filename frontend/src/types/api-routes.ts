@@ -579,15 +579,29 @@ export interface components {
             /** Baseline */
             baseline: number;
         };
+        /** RecurringCategoryGroup */
+        "RecurringCategoryGroup-Input": {
+            /** Category */
+            category: string;
+            /** Transactions */
+            transactions: components["schemas"]["RecurringTransaction"][];
+        };
+        /** RecurringCategoryGroup */
+        "RecurringCategoryGroup-Output": {
+            /** Category */
+            category: string;
+            /** Transactions */
+            transactions: components["schemas"]["RecurringTransaction"][];
+        };
         /** RecurringResponse */
         "RecurringResponse-Input": {
             /** Recurring */
-            recurring: components["schemas"]["RecurringTransaction"][];
+            recurring: components["schemas"]["RecurringCategoryGroup-Input"][];
         };
         /** RecurringResponse */
         "RecurringResponse-Output": {
             /** Recurring */
-            recurring: components["schemas"]["RecurringTransaction"][];
+            recurring: components["schemas"]["RecurringCategoryGroup-Output"][];
         };
         /** RecurringTransaction */
         RecurringTransaction: {
@@ -599,6 +613,12 @@ export interface components {
             occurrences: components["schemas"]["RecurringTransactionPoint"][];
             /** Frequency */
             frequency?: string | null;
+            /** Category */
+            category?: string | null;
+            /** Start Date */
+            start_date?: string | null;
+            /** End Date */
+            end_date?: string | null;
         };
         /** RecurringTransactionPoint */
         RecurringTransactionPoint: {

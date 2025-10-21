@@ -6,21 +6,12 @@ import {
   spacing,
   transitions,
   typography,
-} from "../../constants/styling";
+} from "../../../constants/styling";
+import type { CategoryName } from "../../../types/types";
 
 type CategoryCellProps = {
   category?: string;
 };
-
-type CategoryName =
-  | "Food"
-  | "Health & Fitness"
-  | "Travel"
-  | "Transport"
-  | "Shopping"
-  | "Entertainment"
-  | "Career"
-  | "Bills";
 
 export const CategoryCell = styled.span<CategoryCellProps>`
   display: inline-block;
@@ -97,18 +88,4 @@ export const SortButton = styled.button<{ active?: boolean }>`
     transition: transform 0.2s ease;
     transform: ${({ active }) => (active ? "rotate(180deg)" : "none")};
   }
-`;
-
-export const RecurringList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-export const RecurringItem = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 10px;
-  border-radius: 8px;
 `;
