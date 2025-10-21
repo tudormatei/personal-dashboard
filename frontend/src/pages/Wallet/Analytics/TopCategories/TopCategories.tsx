@@ -65,15 +65,8 @@ const TopCategories: React.FC<TopCategoriesProps> = ({
                 <YAxis
                   dataKey="category"
                   type="category"
-                  width={140}
+                  width={60}
                   stroke={chartStyles.axis.stroke}
-                  label={{
-                    angle: chartStyles.axis.label.angle,
-                    position: chartStyles.axis.label.position,
-                    dx: chartStyles.axis.label.offset,
-                    fill: chartStyles.axis.label.fill,
-                    fontSize: chartStyles.axis.label.style.fontSize,
-                  }}
                 />
 
                 <Tooltip

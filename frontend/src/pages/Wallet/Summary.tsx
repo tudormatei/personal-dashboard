@@ -78,16 +78,6 @@ const Summary = () => {
               />
               <Card title="Currency" value={`${currency}`} />
             </DashboardGrid>
-            <Select
-              value={aggregateDays}
-              onChange={setAggregateDays}
-              options={[
-                { label: "Default (Weekly)", value: null },
-                { label: "Daily", value: "1" },
-                { label: "Weekly", value: "7" },
-                { label: "Monthly", value: "30" },
-              ]}
-            />
           </FlexWrapper>
         </>
       )}
@@ -99,6 +89,16 @@ const Summary = () => {
         <>
           <FlexWrapper>
             <SubHeader>Cash Flow</SubHeader>
+            <Select
+              value={aggregateDays}
+              onChange={setAggregateDays}
+              options={[
+                { label: "Default (Weekly)", value: null },
+                { label: "Daily", value: "1" },
+                { label: "Weekly", value: "7" },
+                { label: "Monthly", value: "30" },
+              ]}
+            />
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={data.chart_data}>
                 <CartesianGrid
