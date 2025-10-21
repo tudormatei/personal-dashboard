@@ -1,11 +1,10 @@
-from collections import defaultdict
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 import io
 from typing import List
 import pandas as pd
 import csv
 import os
-from rapidfuzz import process, fuzz
+from rapidfuzz import fuzz
 import numpy as np
 
 from ..schemas.bank import (
@@ -607,7 +606,14 @@ def compute_top_categories(start_date, end_date, bank):
     )
 
 
-def compute_recurring_transactions(start_date, end_date, bank, min_occurrences=2):
+def compute_recurring_transactions(
+    start_date=None,
+    end_date=None,
+    bank=None,
+    min_occurrences=2,
+    eps=0.3,
+    sim_threshold=80,
+):
     records, _ = get_bank_records(
         start_date=start_date,
         end_date=end_date,
@@ -615,73 +621,100 @@ def compute_recurring_transactions(start_date, end_date, bank, min_occurrences=2
         page=None,
         page_size=None,
     )
+
     if not records:
-        return RecurringResponse(recurring=[])
+        return None
 
     df = categorize_transactions(records)
     df["date"] = pd.to_datetime(df["date"])
-    df["amount"] = df["amount"].astype(float).round(2)
+    df["amount"] = df["amount"].astype(float)
+    df["description_norm"] = (
+        df["description"]
+        .str.lower()
+        .str.replace(r"[^a-z0-9 ]", "", regex=True)
+        .str.replace(r"\s+", " ", regex=True)
+        .str.strip()
+    )
 
-    period_ranges = {
-        "weekly": (4, 12),
-        "biweekly": (10, 25),
-        "monthly": (20, 45),
-        "quarterly": (70, 120),
-        "yearly": (300, 430),
-    }
+    descriptions = df["description_norm"].unique().tolist()
+    clusters = []
+    used = set()
 
-    recurring_candidates = []
+    for desc in descriptions:
+        if desc in used:
+            continue
+        group = [desc]
+        used.add(desc)
+        for other in descriptions:
+            if other in used:
+                continue
+            sim = fuzz.token_set_ratio(desc, other)
+            if sim >= sim_threshold:
+                mean_a = df.loc[df["description_norm"] == desc, "amount"].mean()
+                mean_b = df.loc[df["description_norm"] == other, "amount"].mean()
+                if np.isclose(mean_a, mean_b, rtol=0.3):
+                    group.append(other)
+                    used.add(other)
+        clusters.append(group)
 
-    for (category, subcategory), group in df.groupby(["category", "subcategory"]):
-        if len(group) < min_occurrences:
+    recurring = []
+    now = datetime.today()
+    active_cutoff = now - timedelta(days=35)
+
+    for group in clusters:
+        sub = df[df["description_norm"].isin(group)]
+        if len(sub) < min_occurrences:
             continue
 
-        group = group.sort_values("date")
-        date_diffs = group["date"].diff().dt.days.dropna()
-
-        if len(date_diffs) < 2:
+        sub = sub.sort_values("date")
+        deltas = sub["date"].diff().dt.days.dropna()
+        if deltas.empty:
             continue
 
-        avg_interval = date_diffs.mean()
-        std_interval = date_diffs.std()
-        rel_std = std_interval / avg_interval if avg_interval else np.inf
+        avg_interval = deltas.mean()
+        std_interval = deltas.std() if len(deltas) > 1 else 0
+        amount_std = sub["amount"].std()
+        amount_mean = sub["amount"].mean()
 
-        closest_period = None
-        for period, (low, high) in period_ranges.items():
-            if low <= avg_interval <= high:
-                closest_period = period
-                break
+        if amount_std / abs(amount_mean) < eps and std_interval < 0.4 * avg_interval:
+            if 25 <= avg_interval <= 35:
+                freq = "Monthly"
+            elif 6 <= avg_interval <= 10:
+                freq = "Weekly"
+            elif 85 <= avg_interval <= 95:
+                freq = "Quarterly"
+            elif avg_interval >= 350:
+                freq = "Yearly"
+            else:
+                freq = "Irregular"
 
-        if rel_std > 1.2:
-            continue
+            if freq != "Monthly":
+                continue
 
-        if not closest_period:
-            continue
+            last_payment_date = sub["date"].max()
+            if last_payment_date < active_cutoff:
+                continue
 
-        amt_std = group["amount"].std()
-        amt_rel_std = (
-            amt_std / abs(group["amount"].mean())
-            if abs(group["amount"].mean()) > 0
-            else 0
-        )
+            occurrences = [
+                RecurringTransactionPoint(
+                    date=row["date"].date(),
+                    amount=row["amount"],
+                    description=row["description"],
+                )
+                for _, row in sub.iterrows()
+            ]
 
-        if amt_rel_std > 0.35:
-            continue
-
-        recurring_candidates.append(
-            RecurringTransaction(
-                description=f"{category} / {subcategory}",
-                occurrences=[
-                    RecurringTransactionPoint(
-                        date=row["date"],
-                        amount=row["amount"],
-                        description=row["description"],
-                    )
-                    for _, row in group.iterrows()
-                ],
-                avg_amount=round(group["amount"].mean(), 2),
-                frequency=closest_period,
+            recurring.append(
+                RecurringTransaction(
+                    description=sub["description"].iloc[0],
+                    avg_amount=round(amount_mean, 2),
+                    occurrences=occurrences,
+                    frequency=freq,
+                )
             )
-        )
 
-    return RecurringResponse(recurring=recurring_candidates)
+    recurring = sorted(
+        recurring, key=lambda r: abs(r.avg_amount) * len(r.occurrences), reverse=True
+    )
+
+    return RecurringResponse(recurring=recurring)
