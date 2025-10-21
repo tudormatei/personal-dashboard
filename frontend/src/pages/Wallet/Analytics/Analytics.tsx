@@ -43,6 +43,7 @@ const Analytics: React.FC = () => {
   const fetchPie = useCallback(async () => {
     setLoadingPie(true);
     setAlert(null);
+    setPieData(null);
     try {
       const params = new URLSearchParams();
       if (startDate && !getAll) params.set("start_date", startDate);
@@ -60,6 +61,7 @@ const Analytics: React.FC = () => {
   const fetchTop = useCallback(async () => {
     setLoadingTop(true);
     setAlert(null);
+    setTopCategories(null);
     try {
       const params = new URLSearchParams();
       if (startDate && !getAll) params.set("start_date", startDate);
@@ -77,6 +79,7 @@ const Analytics: React.FC = () => {
   const fetchRecurring = useCallback(async () => {
     setLoadingRecurring(true);
     setAlert(null);
+    setRecurring(null);
     try {
       const params = new URLSearchParams();
       if (startDate && !getAll) params.set("start_date", startDate);
@@ -130,21 +133,20 @@ const Analytics: React.FC = () => {
 
       {alert && <Alert {...alert} />}
 
-      {loadingTop && <Loader text="Loading top categories..." />}
       <TopCategories topCategories={topCategories} endDate={endDate} />
       <FlexWrapper row>
-        <FlexWrapper style={{ width: "50%" }}>
-          {loadingPie && <Loader text="Loading pie chart..." />}
+        <FlexWrapper style={{ width: "30%" }}>
           <CategoriesPieChart pieData={pieData} />
         </FlexWrapper>
 
-        <FlexWrapper style={{ width: "50%" }}>
-          {loadingRecurring && (
-            <Loader text="Loading recurring transactions..." />
-          )}
+        <FlexWrapper style={{ width: "70%" }}>
           <RecurringTransactions recurring={recurring} />
         </FlexWrapper>
       </FlexWrapper>
+
+      {(loadingTop || loadingPie || loadingRecurring) && (
+        <Loader text="Loading analytics..." />
+      )}
     </>
   );
 };

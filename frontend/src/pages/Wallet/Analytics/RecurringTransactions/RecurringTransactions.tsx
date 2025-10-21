@@ -16,6 +16,7 @@ import {
   TransactionAmount,
   TransactionInfo,
   TransactionItem,
+  TransactionItemContainer,
   TransactionMeta,
   TransactionRow,
   TransactionTitle,
@@ -83,11 +84,12 @@ const Category: React.FC<CategoryProps> = ({ category }) => {
         <span>{category.category || "Uncategorized"}</span>
         {expanded ? <FiChevronUp /> : <FiChevronDown />}
       </CategoryHeader>
-
-      {expanded &&
-        category.transactions.map((t) => (
-          <Transaction key={t.description} transaction={t} />
-        ))}
+      <TransactionItemContainer isActive={expanded}>
+        {expanded &&
+          category.transactions.map((t) => (
+            <Transaction key={t.description} transaction={t} />
+          ))}
+      </TransactionItemContainer>
     </CategoryCard>
   );
 };
@@ -157,14 +159,16 @@ const Transaction: React.FC<TransactionProps> = ({ transaction }) => {
     <TransactionItem>
       <TransactionRow>
         <TransactionInfo>
-          <TransactionTitle>{transaction.description}</TransactionTitle>
+          <TransactionTitle title={transaction.description}>
+            {transaction.description}
+          </TransactionTitle>
           <TransactionMeta>
             {transaction.frequency || "—"} • {transaction.occurrences.length}{" "}
             occurrences
           </TransactionMeta>
         </TransactionInfo>
-        <TransactionAmount>
-          {transaction.avg_amount.toFixed(2)}
+        <TransactionAmount profit={transaction.avg_amount > 0}>
+          {transaction.avg_amount}
         </TransactionAmount>
       </TransactionRow>
 

@@ -24,17 +24,27 @@ export const CategoryHeader = styled.h2`
   font-size: ${typography.fontSize.lg};
   font-weight: ${typography.fontWeight.bold};
   color: ${colors.textPrimary};
+  margin: 0;
 `;
 
-export const TransactionItem = styled.div`
-  padding: ${spacing.sm} ${spacing.md};
-  margin-bottom: ${spacing.xs};
+type TransactionItemContainerProps = {
+  isActive?: boolean;
+};
+
+export const TransactionItemContainer = styled.div<TransactionItemContainerProps>`
+  display: flex;
+  flex-direction: column;
+  gap: ${spacing.lg};
+  margin-top: ${({ isActive }) => (isActive ? spacing.md : 0)};
 `;
+
+export const TransactionItem = styled.div``;
 
 export const TransactionRow = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: ${spacing.xxl};
 `;
 
 export const TransactionInfo = styled.div`
@@ -52,10 +62,15 @@ export const TransactionMeta = styled.div`
   color: ${colors.textMuted};
 `;
 
-export const TransactionAmount = styled.div`
+type TransactionAmountProps = {
+  profit?: boolean;
+};
+
+export const TransactionAmount = styled.div<TransactionAmountProps>`
   font-weight: ${typography.fontWeight.medium};
   text-align: right;
-  color: ${colors.accent};
+  color: ${({ profit }) =>
+    profit ? colors.charts.profit : colors.charts.loss};
 `;
 
 export const ExpandButton = styled.button`
