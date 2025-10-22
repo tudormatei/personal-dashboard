@@ -475,6 +475,12 @@ export interface components {
             total_weight_change: number;
             /** Days Used */
             days_used: number;
+            /** Goal Weight */
+            goal_weight: number | null;
+            /** Progress Pct */
+            progress_pct: number | null;
+            /** Estimated Days To Goal */
+            estimated_days_to_goal: number | null;
         };
         /** MonteCarloRequest */
         MonteCarloRequest: {

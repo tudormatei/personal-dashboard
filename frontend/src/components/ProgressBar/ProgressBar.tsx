@@ -1,0 +1,54 @@
+import type { JSX } from "react";
+import { BarWrapper, BarFill, TickLabel, Label } from "./ProgressBar.styled";
+
+type ProgressBarProps = {
+  progress: number;
+  label?: string;
+  goal?: number;
+  current?: number;
+  start?: number;
+  etaDays?: number | null;
+};
+
+const ProgressBar = ({
+  progress,
+  label,
+  goal,
+  current,
+  start,
+  etaDays,
+}: ProgressBarProps): JSX.Element => {
+  const clampedProgress = Math.min(100, Math.max(0, progress));
+  const today = new Date();
+  const estimatedDate = new Date(today);
+  estimatedDate.setDate(today.getDate() + (etaDays ?? 0));
+  const formattedDate = estimatedDate.toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+
+  return (
+    <>
+      {label && <Label>{`${label} - ETA ${formattedDate}`}</Label>}
+      <BarWrapper>
+        <BarFill progress={clampedProgress} />
+        <TickLabel left={0}>
+          <span className="tick" />
+          {start}kg
+        </TickLabel>
+        <TickLabel left={clampedProgress}>
+          <span className="tick" />
+          {current?.toFixed(1)}kg
+        </TickLabel>
+        <TickLabel left={100}>
+          <span className="tick" />
+          {goal}kg
+        </TickLabel>
+      </BarWrapper>
+    </>
+  );
+};
+
+export default ProgressBar;

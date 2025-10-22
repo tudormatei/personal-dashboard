@@ -19,6 +19,7 @@ import type { operations } from "../../types/api-routes";
 import type { AlertData } from "../../types/types";
 import { H2 } from "../../components/Typography/Headings";
 import { DashboardGrid, FlexWrapper } from "../../components/Layout/Layout";
+import ProgressBar from "../../components/ProgressBar/ProgressBar";
 
 type WeightResponse =
   operations["weight_history_api_health_weight_get"]["responses"][200]["content"]["application/json"];
@@ -178,6 +179,16 @@ const Weight = (): JSX.Element => {
             <Card title="Kg/Week" value={maintenanceData.kg_per_week} />
             <Card title="Kg/Month" value={maintenanceData.kg_per_month} />
           </DashboardGrid>
+          <FlexWrapper>
+            <ProgressBar
+              label="Weight Progress"
+              start={maintenanceData.pred_start_weight}
+              progress={maintenanceData.progress_pct ?? 0}
+              current={maintenanceData.pred_end_weight}
+              goal={maintenanceData.goal_weight ?? 0}
+              etaDays={maintenanceData.estimated_days_to_goal}
+            />
+          </FlexWrapper>
         </>
       )}
     </>
