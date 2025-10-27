@@ -14,7 +14,11 @@ import Loader from "../../components/Loader/Loader";
 import Alert from "../../components/Alert/Alert";
 import Card from "../../components/Card/Card";
 import { colors, radii, spacing, typography } from "../../constants/styling";
-import { formatDateReadable, formatNumber } from "../../utils/utils";
+import {
+  formatDateMonthYear,
+  formatDateReadable,
+  formatNumber,
+} from "../../utils/utils";
 import { Field, FormContainer } from "./Investments.styled";
 import Label from "../../components/Label/Label";
 import Input from "../../components/Input/Input";
@@ -194,9 +198,7 @@ const MonteCarloSimulation = ({
               <XAxis
                 stroke={colors.charts.axis}
                 dataKey="date"
-                tickFormatter={(date) =>
-                  `${date.slice(4, 6)}/${date.slice(6, 8)}`
-                }
+                tickFormatter={(date) => `${formatDateMonthYear(date)}`}
               />
               <YAxis
                 domain={["auto", "auto"]}

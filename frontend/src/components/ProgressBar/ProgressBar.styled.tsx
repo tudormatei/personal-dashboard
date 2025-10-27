@@ -1,12 +1,6 @@
 import styled from "@emotion/styled";
 import { colors, radii, typography } from "../../constants/styling";
 
-export const Label = styled.span`
-  font-size: ${typography.fontSize.base};
-  font-weight: ${typography.fontWeight.normal};
-  color: ${colors.textMuted};
-`;
-
 export const BarWrapper = styled.div`
   position: relative;
   width: 100%;

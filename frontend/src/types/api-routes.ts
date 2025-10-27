@@ -476,7 +476,7 @@ export interface components {
             /** Days Used */
             days_used: number;
             /** Goal Weight */
-            goal_weight: number | null;
+            goal_weight: number;
             /** Progress Pct */
             progress_pct: number | null;
             /** Estimated Days To Goal */

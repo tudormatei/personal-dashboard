@@ -1,3 +1,4 @@
+from math import ceil
 from sklearn.linear_model import LinearRegression
 import io
 import xml.etree.ElementTree as ET
@@ -8,6 +9,7 @@ from ..utils.formatting import serialize_dataframe_for_json
 from ..constants.health import (
     AVERAGE_DAYS_PER_MONTH,
     AVERAGE_LIFTING_CALORIES,
+    GOAL_WEIGHT,
     KCALPERKG,
     LIFTING_SESSIONS_PER_WEEK,
     MACRO_TYPES,
@@ -182,6 +184,16 @@ def estimate_maintenance(
         avg_daily_calories + daily_exercise_calories - daily_adjustment
     )
 
+    current_weight = pred_end
+    progress_pct = ((current_weight - pred_start) / (GOAL_WEIGHT - pred_start)) * 100
+    progress_pct = max(0, min(100, progress_pct))
+
+    if slope_kg_per_day != 0:
+        days_to_goal = (GOAL_WEIGHT - current_weight) / slope_kg_per_day
+        eta_days = max(0, ceil(days_to_goal))
+    else:
+        eta_days = None
+
     return {
         "estimated_maintenance_calories": round(maintenance_calories),
         "kg_per_day": round(slope_kg_per_day, 2),
@@ -192,6 +204,9 @@ def estimate_maintenance(
         "pred_end_weight": round(pred_end, 2),
         "total_weight_change": round(pred_end - pred_start, 2),
         "days_used": len(df),
+        "goal_weight": GOAL_WEIGHT,
+        "progress_pct": round(progress_pct, 1),
+        "estimated_days_to_goal": eta_days,
     }
 
 

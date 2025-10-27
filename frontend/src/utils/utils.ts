@@ -29,6 +29,20 @@ export const formatDateTime = (dateStr: string | undefined | null): string => {
   return `${day}/${month}/${year} ${hours}:${minutes}`;
 };
 
+export const formatDateMonthYear = (
+  dateStr: string | undefined | null
+): string => {
+  if (!dateStr) return "";
+
+  const dateOnly = dateStr.split("T")[0].split(" ")[0];
+  const clean = dateOnly.replace(/\D/g, "");
+
+  const year = clean.slice(0, 4);
+  const month = clean.slice(4, 6);
+
+  return `${month}/${year}`;
+};
+
 export const formatDateDayMonth = (
   dateStr: string | undefined | null
 ): string => {

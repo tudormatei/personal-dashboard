@@ -179,16 +179,18 @@ const Weight = (): JSX.Element => {
             <Card title="Kg/Week" value={maintenanceData.kg_per_week} />
             <Card title="Kg/Month" value={maintenanceData.kg_per_month} />
           </DashboardGrid>
-          <FlexWrapper>
-            <ProgressBar
-              label="Weight Progress"
-              start={maintenanceData.pred_start_weight}
-              progress={maintenanceData.progress_pct ?? 0}
-              current={maintenanceData.pred_end_weight}
-              goal={maintenanceData.goal_weight ?? 0}
-              etaDays={maintenanceData.estimated_days_to_goal}
-            />
-          </FlexWrapper>
+          {maintenanceData.goal_weight > maintenanceData.pred_start_weight && (
+            <FlexWrapper>
+              <ProgressBar
+                label="Weight Progress"
+                start={maintenanceData.pred_start_weight}
+                progress={maintenanceData.progress_pct ?? 0}
+                current={maintenanceData.pred_end_weight}
+                goal={maintenanceData.goal_weight}
+                etaDays={maintenanceData.estimated_days_to_goal}
+              />
+            </FlexWrapper>
+          )}
         </>
       )}
     </>

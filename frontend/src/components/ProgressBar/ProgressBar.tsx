@@ -1,5 +1,6 @@
 import type { JSX } from "react";
-import { BarWrapper, BarFill, TickLabel, Label } from "./ProgressBar.styled";
+import { BarWrapper, BarFill, TickLabel } from "./ProgressBar.styled";
+import { SubHeader } from "../Typography/Headings";
 
 type ProgressBarProps = {
   progress: number;
@@ -31,7 +32,7 @@ const ProgressBar = ({
 
   return (
     <>
-      {label && <Label>{`${label} - ETA ${formattedDate}`}</Label>}
+      {label && <SubHeader>{`${label} - ETA ${formattedDate}`}</SubHeader>}
       <BarWrapper>
         <BarFill progress={clampedProgress} />
         <TickLabel left={0}>

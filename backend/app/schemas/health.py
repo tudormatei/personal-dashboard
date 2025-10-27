@@ -25,6 +25,9 @@ class MaintenanceEstimate(BaseModel):
     pred_end_weight: float
     total_weight_change: float
     days_used: int
+    goal_weight: int
+    progress_pct: Optional[float]
+    estimated_days_to_goal: Optional[int]
 
 
 class DailyNutrient(BaseModel):

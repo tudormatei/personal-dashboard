@@ -192,14 +192,10 @@ const Investments = (): JSX.Element => {
                       borderRadius: radii.md,
                       padding: spacing.sm,
                     }}
-                    formatter={(value: number, name: string) => [
-                      <span style={{ color: colors.charts.tooltipText }}>
-                        {value}%
-                      </span>,
-                      <span style={{ color: colors.charts.tooltipText }}>
-                        {name}
-                      </span>,
-                    ]}
+                    itemStyle={{ color: colors.charts.tooltipText }}
+                    formatter={(value: number, name: string) => {
+                      return [`${value}%`, name];
+                    }}
                   />
 
                   <Legend

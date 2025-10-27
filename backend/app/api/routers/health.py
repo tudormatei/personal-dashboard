@@ -54,7 +54,7 @@ def maintenance_calories(
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
     min_daily_calories: Optional[float] = 2500,
-    calories_ma_window: Optional[int] = 0,
+    calories_ma_window: Optional[int] = 7,
 ) -> MaintenanceEstimate | None:
     validate_iso_date(start_date, "start_date")
     validate_iso_date(end_date, "end_date")
