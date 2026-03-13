@@ -10,7 +10,7 @@ services:
       - ./.env
     volumes:
       - ./backend/app:/app/app
-      - ./backend/app/db/db.sqlite3:/app/app/db/db.sqlite3
+      - ./backend/app/db:/app/app/db
     networks:
       - dashboard-net
 
