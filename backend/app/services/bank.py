@@ -607,6 +607,10 @@ def compute_top_categories(start_date, end_date, bank):
     )
 
 
+from collections import Counter, defaultdict
+from datetime import datetime, timedelta
+
+
 def compute_recurring_transactions(
     start_date=None,
     end_date=None,
@@ -624,52 +628,84 @@ def compute_recurring_transactions(
     )
 
     if not records:
-        return None
+        return RecurringResponse(recurring=[])
 
     df = categorize_transactions(records)
-    df["date"] = pd.to_datetime(df["date"])
-    df["amount"] = df["amount"].astype(float)
+
+    if df.empty:
+        return RecurringResponse(recurring=[])
+
+    df["date"] = pd.to_datetime(df["date"], errors="coerce")
+    df["amount"] = pd.to_numeric(df["amount"], errors="coerce")
     df["description_norm"] = (
         df["description"]
+        .astype(str)
         .str.lower()
         .str.replace(r"[^a-z0-9 ]", "", regex=True)
         .str.replace(r"\s+", " ", regex=True)
         .str.strip()
     )
 
+    invalid_date_count = int(df["date"].isna().sum())
+    invalid_amount_count = int(df["amount"].isna().sum())
+    empty_desc_count = int((df["description_norm"] == "").sum())
+
+    df = df.dropna(subset=["date", "amount"])
+    df = df[df["description_norm"] != ""].copy()
+
+    if df.empty:
+        return RecurringResponse(recurring=[])
+
     descriptions = df["description_norm"].unique().tolist()
+
     clusters = []
     used = set()
 
     for desc in descriptions:
         if desc in used:
             continue
+
         group = [desc]
         used.add(desc)
+
         for other in descriptions:
             if other in used:
                 continue
+
             sim = fuzz.token_set_ratio(desc, other)
             if sim >= sim_threshold:
                 mean_a = df.loc[df["description_norm"] == desc, "amount"].mean()
                 mean_b = df.loc[df["description_norm"] == other, "amount"].mean()
+
                 if np.isclose(mean_a, mean_b, rtol=0.3):
                     group.append(other)
                     used.add(other)
+
         clusters.append(group)
+
+    cluster_sizes = [len(c) for c in clusters]
 
     recurring = []
     now = datetime.today()
     active_cutoff = now - timedelta(days=35)
 
-    for group in clusters:
-        sub = df[df["description_norm"].isin(group)]
+    skip_reasons = Counter()
+    accepted_summaries = []
+    inspected_clusters = 0
+
+    for idx, group in enumerate(clusters, start=1):
+        sub = df[df["description_norm"].isin(group)].copy()
+        inspected_clusters += 1
+
         if len(sub) < min_occurrences:
+            skip_reasons["not_enough_occurrences"] += 1
             continue
 
         sub = sub.sort_values("date")
         deltas = sub["date"].diff().dt.days.dropna()
+
         if deltas.empty:
+            skip_reasons["no_deltas"] += 1
             continue
 
         avg_interval = deltas.mean()
@@ -677,57 +713,105 @@ def compute_recurring_transactions(
         amount_std = sub["amount"].std()
         amount_mean = sub["amount"].mean()
 
-        if amount_std / abs(amount_mean) < eps and std_interval < 0.4 * avg_interval:
-            if 25 <= avg_interval <= 35:
-                freq = "Monthly"
-            elif 6 <= avg_interval <= 10:
-                freq = "Weekly"
-            elif 85 <= avg_interval <= 95:
-                freq = "Quarterly"
-            elif avg_interval >= 350:
-                freq = "Yearly"
-            else:
-                freq = "Irregular"
+        if pd.isna(amount_std):
+            amount_std = 0
 
-            if freq != "Monthly":
-                continue
+        if amount_mean == 0:
+            skip_reasons["zero_amount_mean"] += 1
+            continue
 
-            last_payment_date = sub["date"].max()
-            if last_payment_date < active_cutoff:
-                continue
+        amount_ratio = amount_std / abs(amount_mean)
 
-            occurrences = [
-                RecurringTransactionPoint(
-                    date=row["date"].date(),
-                    amount=row["amount"],
-                    description=row["description"],
-                )
-                for _, row in sub.iterrows()
-            ]
+        if amount_ratio >= eps:
+            skip_reasons["amount_variation_too_high"] += 1
+            continue
 
-            start_date = sub["date"].min().date()
-            end_date = sub["date"].max().date()
-            category = sub["category"].iloc[0] if "category" in sub.columns else "Other"
+        if std_interval >= 0.4 * avg_interval:
+            skip_reasons["interval_variation_too_high"] += 1
+            continue
 
-            recurring.append(
-                RecurringTransaction(
-                    description=sub["description"].iloc[0],
-                    avg_amount=round(amount_mean, 2),
-                    occurrences=occurrences,
-                    frequency=freq,
-                    category=category,
-                    start_date=start_date,
-                    end_date=end_date,
-                )
+        if 25 <= avg_interval <= 35:
+            freq = "Monthly"
+        elif 6 <= avg_interval <= 10:
+            freq = "Weekly"
+        elif 85 <= avg_interval <= 95:
+            freq = "Quarterly"
+        elif avg_interval >= 350:
+            freq = "Yearly"
+        else:
+            freq = "Irregular"
+
+        if freq != "Monthly":
+            skip_reasons[f"frequency_{freq.lower()}"] += 1
+            continue
+
+        last_payment_date = sub["date"].max()
+        if last_payment_date < active_cutoff:
+            skip_reasons["inactive_old_last_payment"] += 1
+            continue
+
+        occurrences = [
+            RecurringTransactionPoint(
+                date=row["date"].date(),
+                amount=row["amount"],
+                description=row["description"],
+            )
+            for _, row in sub.iterrows()
+        ]
+
+        tx_start_date = sub["date"].min().date()
+        tx_end_date = sub["date"].max().date()
+        category = sub["category"].iloc[0] if "category" in sub.columns else "Other"
+
+        tx = RecurringTransaction(
+            description=sub["description"].iloc[0],
+            avg_amount=round(amount_mean, 2),
+            occurrences=occurrences,
+            frequency=freq,
+            category=category,
+            start_date=tx_start_date,
+            end_date=tx_end_date,
+        )
+        recurring.append(tx)
+
+        if len(accepted_summaries) < 10:
+            accepted_summaries.append(
+                {
+                    "description": tx.description[:80],
+                    "category": tx.category,
+                    "avg_amount": tx.avg_amount,
+                    "occurrences": len(tx.occurrences),
+                    "start_date": str(tx.start_date),
+                    "end_date": str(tx.end_date),
+                }
             )
 
     recurring = sorted(
-        recurring, key=lambda r: abs(r.avg_amount) * len(r.occurrences), reverse=True
+        recurring,
+        key=lambda r: abs(r.avg_amount) * len(r.occurrences),
+        reverse=True,
     )
 
-    grouped = []
-    for cat, group in pd.DataFrame([r.dict() for r in recurring]).groupby("category"):
-        txs = [RecurringTransaction(**row) for row in group.to_dict(orient="records")]
-        grouped.append(RecurringCategoryGroup(category=cat, transactions=txs))
+    print(
+        "DEBUG recurring result_summary:",
+        {
+            "inspected_clusters": inspected_clusters,
+            "accepted_count": len(recurring),
+            "skip_reasons": dict(skip_reasons),
+            "accepted_samples": accepted_summaries,
+        },
+    )
+
+    if not recurring:
+        return RecurringResponse(recurring=[])
+
+    by_category = defaultdict(list)
+    for tx in recurring:
+        by_category[tx.category or "Other"].append(tx)
+
+    grouped = [
+        RecurringCategoryGroup(category=cat, transactions=txs)
+        for cat, txs in by_category.items()
+    ]
 
     return RecurringResponse(recurring=grouped)

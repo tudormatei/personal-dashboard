@@ -7,13 +7,14 @@ import {
   ContentArea,
   Separator,
 } from "./AppLayout.styled";
-import { FaAppleAlt } from "react-icons/fa";
+import { FaAppleAlt, FaTrophy } from "react-icons/fa";
 import { GiWeight } from "react-icons/gi";
 import { LuDumbbell } from "react-icons/lu";
 import { FaMoneyBillTrendUp } from "react-icons/fa6";
 import { IoMdCloudUpload } from "react-icons/io";
 import { FaHome } from "react-icons/fa";
 import { FaWallet } from "react-icons/fa6";
+
 type AppLayoutProps = {
   children: ReactNode;
 };
@@ -46,6 +47,10 @@ const AppLayout: FC<AppLayoutProps> = ({ children }) => {
         </SidebarItem>
         <SidebarItem to="/wallet" active={pathname === "/wallet"}>
           <FaWallet size={22} />
+        </SidebarItem>
+        <Separator />
+        <SidebarItem to="/mastery" active={pathname === "/mastery"}>
+          <FaTrophy size={22} />
         </SidebarItem>
       </Sidebar>
 

@@ -18,7 +18,8 @@ type InputProps = {
   | "placeholder"
   | "onClick"
   | "onFocus"
->;
+> &
+  InputHTMLAttributes<HTMLInputElement>;
 
 const Input: FC<InputProps> = ({ ...props }) => {
   return (

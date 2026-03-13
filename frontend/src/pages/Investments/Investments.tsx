@@ -269,11 +269,15 @@ const Investments = (): JSX.Element => {
 
               <Card
                 title="Amount Deposited During Period"
-                value={`${data.cashReport.deposits} ${data.account.currency}`}
+                value={`${formatNumber(data.cashReport.deposits, true)} ${
+                  data.account.currency
+                }`}
               />
               <Card
                 title="Amount Withdrew During Period"
-                value={`${data.cashReport.withdrawals} ${data.account.currency}`}
+                value={`${formatNumber(data.cashReport.withdrawals, true)} ${
+                  data.account.currency
+                }`}
               />
             </DashboardGrid>
           </FlexWrapper>

@@ -5,6 +5,6 @@
     "start-frontend": "cd frontend && npm run dev",
     "build-frontend": "cd frontend && npm run build",
     "dev": "docker compose -f docker-compose.dev.yml up --build",
-    "build": "docker compose -f docker-compose.prod.yml up --build"
+    "build": "docker compose -f docker-compose.prod.yml down -v && docker compose -f docker-compose.prod.yml up --build"
   }
 }

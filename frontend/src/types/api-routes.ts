@@ -260,6 +260,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/mastery/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Mastery Activities */
+        get: operations["list_mastery_activities_api_mastery__get"];
+        put?: never;
+        /** Create Mastery Activity */
+        post: operations["create_mastery_activity_api_mastery__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/mastery/{activity_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Mastery Activity */
+        get: operations["get_mastery_activity_api_mastery__activity_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/mastery/{activity_id}/log": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Log Activity Hours */
+        post: operations["log_activity_hours_api_mastery__activity_id__log_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -273,6 +325,72 @@ export interface components {
             /** Id */
             id: string;
         };
+        /** ActivityCreateRequest */
+        ActivityCreateRequest: {
+            /** Name */
+            name: string;
+            /**
+             * Starting Hours
+             * @default 0
+             */
+            starting_hours: number;
+            /**
+             * Max Hours
+             * @default 10000
+             */
+            max_hours: number;
+        };
+        /** ActivityListItem */
+        ActivityListItem: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Max Hours */
+            max_hours: number;
+            /** Total Hours */
+            total_hours: number;
+            /** Current Level */
+            current_level: string;
+            /** Progress Pct */
+            progress_pct: number;
+        };
+        /** ActivityResponse */
+        ActivityResponse: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Max Hours */
+            max_hours: number;
+            /** Total Hours */
+            total_hours: number;
+            /** Milestones */
+            milestones: components["schemas"]["Milestone"][];
+            /** History */
+            history: components["schemas"]["HistoryEntry"][];
+            /** Current Level */
+            current_level: string;
+            next_milestone?: components["schemas"]["NextMilestone"] | null;
+            stats: components["schemas"]["ActivityStats"];
+            /** Completed Milestones */
+            completed_milestones: components["schemas"]["Milestone"][];
+        };
+        /** ActivityStats */
+        ActivityStats: {
+            /** Today Hours */
+            today_hours: number;
+            /** Weekly Hours */
+            weekly_hours: number;
+            /** Monthly Hours */
+            monthly_hours: number;
+            /** Streak Days */
+            streak_days: number;
+            /** Remaining Hours */
+            remaining_hours: number;
+            /** Progress Pct */
+            progress_pct: number;
+        };
         /** BanksResponse */
         BanksResponse: {
             /** Banks */
@@ -285,10 +403,7 @@ export interface components {
         };
         /** Body_upload_health_api_health__post */
         Body_upload_health_api_health__post: {
-            /**
-             * File
-             * Format: binary
-             */
+            /** File */
             file: string;
         };
         /** CashFlowPoint */
@@ -388,35 +503,7 @@ export interface components {
             ma90?: number | null;
         };
         /** FinancialReport */
-        "FinancialReport-Input": {
-            /** Reports */
-            reports: number;
-            /**
-             * Fromdate
-             * Format: date
-             */
-            fromDate: string;
-            /**
-             * Todate
-             * Format: date
-             */
-            toDate: string;
-            account: components["schemas"]["AccountInfo"];
-            cashReport: components["schemas"]["CashReport"];
-            /** Valueovertime */
-            valueOverTime: components["schemas"]["ValueOverTimePoint"][];
-            /** Statementfunds */
-            statementFunds: components["schemas"]["StatementFund"][];
-            /** Openpositions */
-            openPositions: components["schemas"]["OpenPosition"][];
-            /** Trades */
-            trades: components["schemas"]["Trade"][];
-            /** Cashtransactions */
-            cashTransactions: components["schemas"]["CashTransaction"][];
-            timeWeightedReturn: components["schemas"]["TimeWeightedReturn"];
-        };
-        /** FinancialReport */
-        "FinancialReport-Output": {
+        FinancialReport: {
             /** Reports */
             reports: number;
             /**
@@ -455,6 +542,23 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /** HistoryEntry */
+        HistoryEntry: {
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /** Hours */
+            hours: number;
+        };
+        /** LogHoursRequest */
+        LogHoursRequest: {
+            /** Hours */
+            hours: number;
+            /** Entry Date */
+            entry_date?: string | null;
+        };
         /** MaintenanceEstimate */
         MaintenanceEstimate: {
             /** Estimated Maintenance Calories */
@@ -481,6 +585,15 @@ export interface components {
             progress_pct: number | null;
             /** Estimated Days To Goal */
             estimated_days_to_goal: number | null;
+        };
+        /** Milestone */
+        Milestone: {
+            /** Label */
+            label: string;
+            /** Hours */
+            hours: number;
+            /** Short Label */
+            short_label?: string | null;
         };
         /** MonteCarloRequest */
         MonteCarloRequest: {
@@ -532,6 +645,19 @@ export interface components {
             /** Portfolioprojection */
             portfolioProjection: components["schemas"]["PortfolioProjectionPoint"][];
             goalAchievement: components["schemas"]["GoalAchievement"] | null;
+        };
+        /** NextMilestone */
+        NextMilestone: {
+            /** Label */
+            label: string;
+            /** Hours */
+            hours: number;
+            /** Short Label */
+            short_label?: string | null;
+            /** Distance Hours */
+            distance_hours: number;
+            /** Progress Pct */
+            progress_pct: number;
         };
         /** NutrientStats */
         NutrientStats: {
@@ -586,28 +712,16 @@ export interface components {
             baseline: number;
         };
         /** RecurringCategoryGroup */
-        "RecurringCategoryGroup-Input": {
-            /** Category */
-            category: string;
-            /** Transactions */
-            transactions: components["schemas"]["RecurringTransaction"][];
-        };
-        /** RecurringCategoryGroup */
-        "RecurringCategoryGroup-Output": {
+        RecurringCategoryGroup: {
             /** Category */
             category: string;
             /** Transactions */
             transactions: components["schemas"]["RecurringTransaction"][];
         };
         /** RecurringResponse */
-        "RecurringResponse-Input": {
+        RecurringResponse: {
             /** Recurring */
-            recurring: components["schemas"]["RecurringCategoryGroup-Input"][];
-        };
-        /** RecurringResponse */
-        "RecurringResponse-Output": {
-            /** Recurring */
-            recurring: components["schemas"]["RecurringCategoryGroup-Output"][];
+            recurring: components["schemas"]["RecurringCategoryGroup"][];
         };
         /** RecurringTransaction */
         RecurringTransaction: {
@@ -684,13 +798,7 @@ export interface components {
             twr: number;
         };
         /** TopCategoriesResponse */
-        "TopCategoriesResponse-Input": {
-            period: components["schemas"]["TrendPeriod"];
-            /** Top Categories */
-            top_categories: components["schemas"]["CategoryTrend"][];
-        };
-        /** TopCategoriesResponse */
-        "TopCategoriesResponse-Output": {
+        TopCategoriesResponse: {
             period: components["schemas"]["TrendPeriod"];
             /** Top Categories */
             top_categories: components["schemas"]["CategoryTrend"][];
@@ -785,6 +893,11 @@ export interface components {
             /** Previous */
             previous: string;
         };
+        /** UploadResponse */
+        UploadResponse: {
+            /** Imported */
+            imported: number;
+        };
         /** ValidationError */
         ValidationError: {
             /** Location */
@@ -793,6 +906,10 @@ export interface components {
             msg: string;
             /** Error Type */
             type: string;
+            /** Input */
+            input?: unknown;
+            /** Context */
+            ctx?: Record<string, never>;
         };
         /** ValueOverTimePoint */
         ValueOverTimePoint: {
@@ -866,11 +983,6 @@ export interface components {
             /** Longest Streak Days */
             longest_streak_days: number;
         };
-        /** UploadResponse */
-        app__schemas__bank__UploadResponse: {
-            /** Imported */
-            imported: number;
-        };
     };
     responses: never;
     parameters: never;
@@ -899,7 +1011,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["app__schemas__bank__UploadResponse"];
+                    "application/json": components["schemas"]["UploadResponse"];
                 };
             };
             /** @description Validation Error */
@@ -1065,7 +1177,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["FinancialReport-Output"] | null;
+                    "application/json": components["schemas"]["FinancialReport"] | null;
                 };
             };
             /** @description Validation Error */
@@ -1182,7 +1294,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["app__schemas__bank__UploadResponse"];
+                    "application/json": components["schemas"]["UploadResponse"];
                 };
             };
             /** @description Validation Error */
@@ -1338,7 +1450,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TopCategoriesResponse-Output"] | null;
+                    "application/json": components["schemas"]["TopCategoriesResponse"] | null;
                 };
             };
             /** @description Validation Error */
@@ -1372,7 +1484,126 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RecurringResponse-Output"] | null;
+                    "application/json": components["schemas"]["RecurringResponse"] | null;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_mastery_activities_api_mastery__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityListItem"][];
+                };
+            };
+        };
+    };
+    create_mastery_activity_api_mastery__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActivityCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_mastery_activity_api_mastery__activity_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                activity_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    log_activity_hours_api_mastery__activity_id__log_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                activity_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LogHoursRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityResponse"];
                 };
             };
             /** @description Validation Error */

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { FiltersWrapper, QuickButtons } from "./FilterBar.styled";
-import Button from "../../components/Button/Button";
+import Button from "../Button/Button";
 import Label from "../Label/Label";
 import Input from "../Input/Input";
 

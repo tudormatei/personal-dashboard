@@ -8,6 +8,7 @@ import Workouts from "./pages/Workouts/Workouts";
 import Investments from "./pages/Investments/Investments";
 import Home from "./pages/Home/Home";
 import Wallet from "./pages/Wallet/Wallet";
+import Mastery from "./pages/Mastery/Mastery";
 
 const App = (): JSX.Element => {
   return (
@@ -21,6 +22,7 @@ const App = (): JSX.Element => {
           <Route path="/workouts" element={<Workouts />} />
           <Route path="/investments" element={<Investments />} />
           <Route path="/wallet" element={<Wallet />} />
+          <Route path="/mastery" element={<Mastery />} />
         </Routes>
       </AppLayout>
     </BrowserRouter>
