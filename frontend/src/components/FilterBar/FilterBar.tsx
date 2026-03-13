@@ -117,7 +117,7 @@ const FilterBar = ({
           onClick={applyFilter}
           disabled={loading || invalidRange}
         >
-          {loading ? "Applying..." : "Apply"}
+          {loading ? "Loading..." : "Apply"}
         </Button>
 
         <QuickButtons>
