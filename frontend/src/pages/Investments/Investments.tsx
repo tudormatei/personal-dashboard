@@ -30,8 +30,9 @@ import {
 import MonteCarloSimulation from "./MonteCarloSimulation";
 import type { operations } from "../../types/api-routes";
 import type { AlertData } from "../../types/types";
-import { H2, SubHeader } from "../../components/Typography/Headings";
+import { H1, SubHeader } from "../../components/Typography/Headings";
 import { DashboardGrid, FlexWrapper } from "../../components/Layout/Layout";
+import { useIsPhone } from "../../hooks/useIsPhone";
 
 type Fund = {
   date: string;
@@ -48,6 +49,8 @@ type FinancialReport =
   operations["get_financial_data_api_investments__get"]["responses"][200]["content"]["application/json"];
 
 const Investments = (): JSX.Element => {
+  const isPhone = useIsPhone();
+
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState<AlertData | null>(null);
 
@@ -99,20 +102,20 @@ const Investments = (): JSX.Element => {
 
             return acc;
           },
-          {}
-        )
+          {},
+        ),
       )
     : [];
 
   const latestValue = data?.valueOverTime.at(-1)?.total ?? 0;
   const totalPL = data?.openPositions.reduce(
     (acc, pos) => acc + (pos.positionValue - pos.costBasisMoney),
-    0
+    0,
   );
 
   return (
     <>
-      <H2>Investment Dashboard</H2>
+      <H1>Investment Dashboard</H1>
       <FilterBar onFilter={fetchInvestments} runOnMount={false} />
 
       {loading && <Loader text="Loading investment data..." />}
@@ -229,7 +232,7 @@ const Investments = (): JSX.Element => {
                   title="Total % Return"
                   value={`${formatNumber(
                     (totalPL / (latestValue - totalPL)) * 100,
-                    true
+                    true,
                   )}%`}
                 />
               )}
@@ -248,7 +251,7 @@ const Investments = (): JSX.Element => {
               <Card
                 title="Date Range"
                 value={`${formatDateReadable(
-                  data.fromDate
+                  data.fromDate,
                 )} → ${formatDateReadable(data.toDate)}`}
               />
               <Card
@@ -262,7 +265,7 @@ const Investments = (): JSX.Element => {
                     latestValue -
                       (data.valueOverTime[0].total +
                         data.cashReport.deposits -
-                        data.cashReport.withdrawals)
+                        data.cashReport.withdrawals),
                   )} ${data.account.currency}`}
                 />
               )}
@@ -285,7 +288,15 @@ const Investments = (): JSX.Element => {
           <FlexWrapper>
             <SubHeader>Portfolio Growth % Over Time</SubHeader>
             <ResponsiveContainer width="100%" height={400}>
-              <LineChart data={data.timeWeightedReturn.series}>
+              <LineChart
+                data={data.timeWeightedReturn.series}
+                margin={{
+                  top: 8,
+                  right: isPhone ? 8 : 16,
+                  left: isPhone ? 0 : 8,
+                  bottom: isPhone ? 0 : 8,
+                }}
+              >
                 <CartesianGrid
                   strokeDasharray="3 3"
                   stroke={colors.charts.grid}
@@ -294,17 +305,26 @@ const Investments = (): JSX.Element => {
                   stroke={colors.charts.axis}
                   dataKey="date"
                   tickFormatter={(date) => `${formatDateDayMonth(date)}`}
+                  minTickGap={isPhone ? 24 : 12}
+                  tick={{ fontSize: isPhone ? 11 : 12 }}
                 />
                 <YAxis
                   stroke={colors.charts.axis}
-                  label={{
-                    value: "Growth (%)",
-                    angle: -90,
-                    position: "insideLeft",
-                    offset: 0,
-                    fill: colors.charts.axis,
-                    style: { fontSize: "0.8rem" },
-                  }}
+                  width={isPhone ? 36 : 52}
+                  tick={{ fontSize: isPhone ? 11 : 12 }}
+                  tickCount={isPhone ? 4 : 6}
+                  label={
+                    isPhone
+                      ? undefined
+                      : {
+                          value: "Growth (%)",
+                          angle: -90,
+                          position: "insideLeft",
+                          offset: 0,
+                          fill: colors.charts.axis,
+                          style: { fontSize: "0.8rem" },
+                        }
+                  }
                 />
                 <Tooltip
                   formatter={(value: number) => `${value}%`}
@@ -354,7 +374,7 @@ const Investments = (): JSX.Element => {
                   type="monotone"
                   dataKey="twr"
                   stroke="url(#lineGradient)"
-                  strokeWidth={2}
+                  strokeWidth={isPhone ? 1.2 : 1.5}
                   dot={false}
                   name="Growth"
                 />
@@ -365,7 +385,15 @@ const Investments = (): JSX.Element => {
           <FlexWrapper>
             <SubHeader>Portfolio Value Over Time</SubHeader>
             <ResponsiveContainer width="100%" height={400}>
-              <LineChart data={data.valueOverTime}>
+              <LineChart
+                data={data.valueOverTime}
+                margin={{
+                  top: 8,
+                  right: isPhone ? 8 : 16,
+                  left: isPhone ? 0 : 8,
+                  bottom: isPhone ? 0 : 8,
+                }}
+              >
                 <CartesianGrid
                   strokeDasharray="3 3"
                   stroke={colors.charts.grid}
@@ -374,17 +402,26 @@ const Investments = (): JSX.Element => {
                   stroke={colors.charts.axis}
                   dataKey="date"
                   tickFormatter={(date) => `${formatDateDayMonth(date)}`}
+                  minTickGap={isPhone ? 24 : 12}
+                  tick={{ fontSize: isPhone ? 11 : 12 }}
                 />
                 <YAxis
                   stroke={colors.charts.axis}
-                  label={{
-                    value: "Value ($)",
-                    angle: -90,
-                    position: "insideLeft",
-                    offset: 0,
-                    fill: colors.charts.axis,
-                    style: { fontSize: "0.8rem" },
-                  }}
+                  width={isPhone ? 36 : 52}
+                  tick={{ fontSize: isPhone ? 11 : 12 }}
+                  tickCount={isPhone ? 4 : 6}
+                  label={
+                    isPhone
+                      ? undefined
+                      : {
+                          value: "Value ($)",
+                          angle: -90,
+                          position: "insideLeft",
+                          offset: 0,
+                          fill: colors.charts.axis,
+                          style: { fontSize: "0.8rem" },
+                        }
+                  }
                   tickFormatter={(value) => `${formatNumber(value)}`}
                 />
                 <Tooltip
@@ -409,7 +446,7 @@ const Investments = (): JSX.Element => {
                   type="monotone"
                   dataKey="total"
                   stroke={colors.charts.primary}
-                  strokeWidth={2}
+                  strokeWidth={isPhone ? 1.2 : 1.5}
                   dot={false}
                   name="Total Value"
                 />
@@ -417,7 +454,7 @@ const Investments = (): JSX.Element => {
                   type="monotone"
                   dataKey="cash"
                   stroke={colors.charts.secondary}
-                  strokeWidth={2}
+                  strokeWidth={isPhone ? 1.2 : 1.5}
                   dot={false}
                   name="Cash"
                 />
@@ -507,7 +544,15 @@ const Investments = (): JSX.Element => {
           <FlexWrapper>
             <SubHeader>Daily Cash Flows</SubHeader>
             <ResponsiveContainer width="100%" height={400}>
-              <BarChart data={fundsData}>
+              <BarChart
+                data={fundsData}
+                margin={{
+                  top: 8,
+                  right: isPhone ? 8 : 16,
+                  left: isPhone ? 0 : 8,
+                  bottom: isPhone ? 0 : 8,
+                }}
+              >
                 <CartesianGrid
                   strokeDasharray="3 3"
                   stroke={colors.charts.grid}
@@ -516,17 +561,26 @@ const Investments = (): JSX.Element => {
                   stroke={colors.charts.axis}
                   dataKey="date"
                   tickFormatter={(date) => `${formatDateDayMonth(date)}`}
+                  minTickGap={isPhone ? 24 : 12}
+                  tick={{ fontSize: isPhone ? 11 : 12 }}
                 />
                 <YAxis
                   stroke={colors.charts.axis}
-                  label={{
-                    value: "Value ($)",
-                    angle: -90,
-                    position: "insideLeft",
-                    offset: 0,
-                    fill: colors.charts.axis,
-                    style: { fontSize: "0.8rem" },
-                  }}
+                  width={isPhone ? 36 : 52}
+                  tick={{ fontSize: isPhone ? 11 : 12 }}
+                  tickCount={isPhone ? 4 : 6}
+                  label={
+                    isPhone
+                      ? undefined
+                      : {
+                          value: "Value ($)",
+                          angle: -90,
+                          position: "insideLeft",
+                          offset: 0,
+                          fill: colors.charts.axis,
+                          style: { fontSize: "0.8rem" },
+                        }
+                  }
                   tickFormatter={(value) => `${formatNumber(value)}`}
                 />
                 <Tooltip

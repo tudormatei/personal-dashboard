@@ -1,13 +1,15 @@
-import { FaAppleAlt } from "react-icons/fa";
+import { FaAppleAlt, FaWallet } from "react-icons/fa";
 import { GiWeight } from "react-icons/gi";
 import { LuDumbbell } from "react-icons/lu";
 import { FaMoneyBillTrendUp } from "react-icons/fa6";
+import { FaBullseye } from "react-icons/fa";
 import {
   Grid,
   SectionCard,
   IconWrapper,
   SectionTitle,
   SectionDesc,
+  CardHeader,
 } from "./Home.styled";
 import { H1, SubHeader } from "../../components/Typography/Headings";
 
@@ -15,15 +17,17 @@ const Home = () => (
   <>
     <H1 center>Welcome to Your Personal Dashboard</H1>
     <SubHeader center>
-      Explore all features: health, nutrition, fitness, and
-      investments—beautifully visualized and easy to use.
+      Explore all features: health, nutrition, fitness, investments, expenses
+      and habits—beautifully visualized and easy to use.
     </SubHeader>
     <Grid>
       <SectionCard>
-        <IconWrapper>
-          <GiWeight />
-        </IconWrapper>
-        <SectionTitle>Weight Tracking</SectionTitle>
+        <CardHeader>
+          <SectionTitle>Weight Tracking</SectionTitle>
+          <IconWrapper>
+            <GiWeight />
+          </IconWrapper>
+        </CardHeader>
         <SectionDesc>
           <ul>
             <li>📈 Interactive weight charts with moving averages</li>
@@ -34,10 +38,12 @@ const Home = () => (
         </SectionDesc>
       </SectionCard>
       <SectionCard>
-        <IconWrapper>
-          <FaAppleAlt />
-        </IconWrapper>
-        <SectionTitle>Macros Dashboard</SectionTitle>
+        <CardHeader>
+          <SectionTitle>Macros Dashboard</SectionTitle>
+          <IconWrapper>
+            <FaAppleAlt />
+          </IconWrapper>
+        </CardHeader>
         <SectionDesc>
           <ul>
             <li>
@@ -50,10 +56,12 @@ const Home = () => (
         </SectionDesc>
       </SectionCard>
       <SectionCard>
-        <IconWrapper>
-          <LuDumbbell />
-        </IconWrapper>
-        <SectionTitle>Workouts Overview</SectionTitle>
+        <CardHeader>
+          <SectionTitle>Workouts Overview</SectionTitle>
+          <IconWrapper>
+            <LuDumbbell />
+          </IconWrapper>
+        </CardHeader>
         <SectionDesc>
           <ul>
             <li>📅 Calendar heatmap of workout days</li>
@@ -64,16 +72,51 @@ const Home = () => (
         </SectionDesc>
       </SectionCard>
       <SectionCard>
-        <IconWrapper>
-          <FaMoneyBillTrendUp />
-        </IconWrapper>
-        <SectionTitle>Investments Monitor</SectionTitle>
+        <CardHeader>
+          <SectionTitle>Investments Monitor</SectionTitle>
+          <IconWrapper>
+            <FaMoneyBillTrendUp />
+          </IconWrapper>
+        </CardHeader>
         <SectionDesc>
           <ul>
             <li>💼 Portfolio allocation and open positions</li>
             <li>📊 Value over time, cash flows, and trades</li>
             <li>🧾 Detailed tables and interactive charts</li>
             <li>🌙 Financial data, styled for clarity</li>
+          </ul>
+        </SectionDesc>
+      </SectionCard>
+      <SectionCard>
+        <CardHeader>
+          <SectionTitle>Wallet Dashboard</SectionTitle>
+          <IconWrapper>
+            <FaWallet />
+          </IconWrapper>
+        </CardHeader>
+        <SectionDesc>
+          <ul>
+            <li>💰 Financial summary: income, expenses, net savings</li>
+            <li>📊 Cash flow charts and spending trends</li>
+            <li>📋 Transaction history with advanced filtering</li>
+            <li>🥧 Category breakdowns and spending analytics</li>
+            <li>🔄 Recurring transactions tracking</li>
+          </ul>
+        </SectionDesc>
+      </SectionCard>
+      <SectionCard>
+        <CardHeader>
+          <SectionTitle>Mastery Tracker</SectionTitle>
+          <IconWrapper>
+            <FaBullseye />
+          </IconWrapper>
+        </CardHeader>
+        <SectionDesc>
+          <ul>
+            <li>🎯 Track hours toward mastery of any skill</li>
+            <li>🔥 Daily streaks and practice consistency</li>
+            <li>📊 Progress rings and milestone levels</li>
+            <li>🏆 Unlock ranks on the path to mastery</li>
           </ul>
         </SectionDesc>
       </SectionCard>

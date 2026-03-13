@@ -6,8 +6,8 @@ import {
   List,
   EmptyState,
   Stat,
+  StatContainer,
 } from "./Mastery.styled";
-import Label from "../../components/Label/Label";
 import Input from "../../components/Input/Input";
 import Button from "../../components/Button/Button";
 import { H1 } from "../../components/Typography/Headings";
@@ -41,6 +41,12 @@ const Mastery = () => {
   const [startingHours, setStartingHours] = useState<number>(0);
   const [newMax, setNewMax] = useState<number>(10000);
   const [quickAdds, setQuickAdds] = useState<Record<number, string>>({});
+
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+
+  const toggleActivity = (id: number) => {
+    setExpandedId((prev) => (prev === id ? null : id));
+  };
 
   const fetchActivities = async () => {
     setLoading(true);
@@ -184,40 +190,41 @@ const Mastery = () => {
     <>
       <H1>Mastery Quest</H1>
 
-      <div>
+      <StatContainer>
         <Stat>{activities.length} activities</Stat>
         <Stat>{prettyHours(totalTrackedHours)}h logged</Stat>
-      </div>
+      </StatContainer>
 
       <FormCard>
         <FormGrid>
           <InputGroup>
-            <Label>Activity name</Label>
             <Input
-              placeholder="e.g. Guitar, Coding, Drawing"
+              aria-label="Activity name"
+              placeholder="New activity name (e.g. Guitar, Coding, Drawing)"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
             />
           </InputGroup>
 
           <InputGroup>
-            <Label>Starting hours</Label>
             <Input
+              aria-label="Starting hours"
               type="number"
               min="0"
-              placeholder="0"
-              value={startingHours}
-              onChange={(e) => setStartingHours(Number(e.target.value))}
+              placeholder="Starting hours"
+              value={startingHours === 0 ? "" : startingHours}
+              onChange={(e) => setStartingHours(Number(e.target.value) || 0)}
             />
           </InputGroup>
 
           <InputGroup>
-            <Label>Mastery goal</Label>
             <Input
+              aria-label="Mastery goal"
               type="number"
               min="1"
+              placeholder="Goal hours"
               value={newMax}
-              onChange={(e) => setNewMax(Number(e.target.value))}
+              onChange={(e) => setNewMax(Number(e.target.value) || 10000)}
             />
           </InputGroup>
 
@@ -247,6 +254,8 @@ const Mastery = () => {
             <MasteryActivityItem
               key={activity.id}
               activity={activity}
+              isExpanded={expandedId === activity.id}
+              onToggle={() => toggleActivity(activity.id)}
               quickAddValue={quickAdds[activity.id] ?? ""}
               onQuickAddChange={setQuickAdd}
               onSubmitQuickAdd={submitQuickAdd}

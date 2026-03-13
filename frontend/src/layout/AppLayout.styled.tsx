@@ -1,6 +1,12 @@
 import styled from "@emotion/styled";
 import { Link } from "react-router-dom";
-import { colors, spacing, typography, shadows } from "../constants/styling";
+import {
+  colors,
+  spacing,
+  typography,
+  shadows,
+  breakpoints,
+} from "../constants/styling";
 
 export const LayoutContainer = styled.div`
   display: flex;
@@ -10,6 +16,10 @@ export const LayoutContainer = styled.div`
   color: ${colors.textPrimary};
   font-family: ${typography.fontFamily};
   overflow: hidden;
+
+  ${breakpoints.phone} {
+    flex-direction: column-reverse;
+  }
 `;
 
 export const Sidebar = styled.nav`
@@ -21,6 +31,19 @@ export const Sidebar = styled.nav`
   border-right: 1px solid ${colors.border};
   padding: ${spacing.md} 0;
   gap: ${spacing.lg};
+  flex-shrink: 0;
+
+  ${breakpoints.phone} {
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    height: 64px;
+    padding: 0 ${spacing.sm};
+    border-right: none;
+    border-top: 1px solid ${colors.border};
+    gap: 0;
+  }
 `;
 
 export const Separator = styled.div`
@@ -28,6 +51,10 @@ export const Separator = styled.div`
   width: 50%;
   background-color: ${colors.charts.grid};
   margin: 0;
+
+  ${breakpoints.phone} {
+    display: none;
+  }
 `;
 
 export const Logo = styled.div`
@@ -62,6 +89,12 @@ export const SidebarItem = styled(Link, {
     background-color: ${colors.surfaceAlt};
     box-shadow: ${shadows.soft};
   }
+
+  ${breakpoints.phone} {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+  }
 `;
 
 export const ContentArea = styled.main`
@@ -84,4 +117,9 @@ export const ContentArea = styled.main`
   }
   scrollbar-width: none;
   -ms-overflow-style: none;
+
+  ${breakpoints.phone} {
+    padding: ${spacing.md};
+    gap: ${spacing.md};
+  }
 `;

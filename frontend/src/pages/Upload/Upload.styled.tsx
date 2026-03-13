@@ -6,6 +6,7 @@ import {
   shadows,
   typography,
   transitions,
+  breakpoints,
 } from "../../constants/styling";
 
 export const PageContainer = styled.div`
@@ -15,11 +16,16 @@ export const PageContainer = styled.div`
   flex-direction: row;
   justify-content: center;
   text-align: center;
+  align-items: center;
   font-family: ${typography.fontFamily};
+  gap: ${spacing.lg};
+
+  ${breakpoints.phone} {
+    flex-direction: column;
+  }
 `;
 
 export const UploadBox = styled.div`
-  padding: ${spacing.xl};
   border-radius: ${radii.lg};
   display: flex;
   flex-direction: column;
@@ -45,7 +51,8 @@ export const FileInput = styled.input`
   &:hover,
   &:focus {
     border-color: ${colors.accent};
-    box-shadow: inset 0 0 0 2px rgba(255, 140, 0, 0.1),
+    box-shadow:
+      inset 0 0 0 2px rgba(255, 140, 0, 0.1),
       0 0 10px rgba(255, 140, 0, 0.2);
     outline: none;
   }
@@ -75,7 +82,9 @@ export const FileInput = styled.input`
 
     &:focus {
       outline: none;
-      box-shadow: 0 0 0 2px ${colors.background}, 0 0 0 4px ${colors.accent};
+      box-shadow:
+        0 0 0 2px ${colors.background},
+        0 0 0 4px ${colors.accent};
     }
   }
 `;

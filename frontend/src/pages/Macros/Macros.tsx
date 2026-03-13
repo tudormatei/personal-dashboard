@@ -17,8 +17,9 @@ import Alert from "../../components/Alert/Alert";
 import { formatDate } from "../../utils/utils";
 import type { components, operations } from "../../types/api-routes";
 import type { AlertData } from "../../types/types";
-import { H2 } from "../../components/Typography/Headings";
+import { H1 } from "../../components/Typography/Headings";
 import { DashboardGrid, FlexWrapper } from "../../components/Layout/Layout";
+import { useIsPhone } from "../../hooks/useIsPhone";
 
 const nutrients = [
   { key: "calories", label: "Calories (kcal)" },
@@ -33,6 +34,8 @@ type MacrosData =
 type DailyNutrient = components["schemas"]["DailyNutrient"];
 
 const Macros = (): JSX.Element => {
+  const isPhone = useIsPhone();
+
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState<AlertData | null>(null);
 
@@ -61,7 +64,7 @@ const Macros = (): JSX.Element => {
 
   return (
     <>
-      <H2>Macros Dashboard</H2>
+      <H1>Macros Dashboard</H1>
 
       <FilterBar onFilter={fetchData} />
 
@@ -78,7 +81,15 @@ const Macros = (): JSX.Element => {
           return (
             <FlexWrapper key={nutrient.key}>
               <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={data}>
+                <LineChart
+                  data={data}
+                  margin={{
+                    top: 8,
+                    right: isPhone ? 8 : 16,
+                    left: isPhone ? 0 : 8,
+                    bottom: isPhone ? 0 : 8,
+                  }}
+                >
                   <CartesianGrid
                     strokeDasharray="3 3"
                     stroke={colors.charts.grid}
@@ -87,18 +98,27 @@ const Macros = (): JSX.Element => {
                     dataKey="date"
                     stroke={colors.charts.axis}
                     tickFormatter={(d) => formatDate(d)}
+                    minTickGap={isPhone ? 24 : 12}
+                    tick={{ fontSize: isPhone ? 11 : 12 }}
                   />
                   <YAxis
                     stroke={colors.charts.axis}
                     domain={["auto", "auto"]}
-                    label={{
-                      value: nutrient.label,
-                      angle: -90,
-                      position: "insideLeft",
-                      offset: 0,
-                      fill: colors.charts.axis,
-                      style: { fontSize: "0.8rem" },
-                    }}
+                    width={isPhone ? 36 : 52}
+                    tick={{ fontSize: isPhone ? 11 : 12 }}
+                    tickCount={isPhone ? 4 : 6}
+                    label={
+                      isPhone
+                        ? undefined
+                        : {
+                            value: nutrient.label,
+                            angle: -90,
+                            position: "insideLeft",
+                            offset: 0,
+                            fill: colors.charts.axis,
+                            style: { fontSize: "0.8rem" },
+                          }
+                    }
                   />
                   <Tooltip
                     contentStyle={{
@@ -118,9 +138,9 @@ const Macros = (): JSX.Element => {
                         nutrient.key as keyof typeof colors.charts
                       ] as string
                     }
-                    strokeWidth={2}
-                    dot={{ r: 3 }}
-                    activeDot={{ r: 5 }}
+                    strokeWidth={isPhone ? 1.8 : 2}
+                    dot={{ r: isPhone ? 2 : 4 }}
+                    activeDot={{ r: isPhone ? 4 : 6 }}
                     name={nutrient.label}
                   />
 
@@ -140,7 +160,7 @@ const Macros = (): JSX.Element => {
                             ma as keyof typeof colors.charts
                           ] as string
                         }
-                        strokeWidth={1.5}
+                        strokeWidth={isPhone ? 1.2 : 1.5}
                         dot={false}
                         name={`${nutrient.label} ${ma.replace("ma", "")}d MA`}
                       />

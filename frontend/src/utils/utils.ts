@@ -30,7 +30,7 @@ export const formatDateTime = (dateStr: string | undefined | null): string => {
 };
 
 export const formatDateMonthYear = (
-  dateStr: string | undefined | null
+  dateStr: string | undefined | null,
 ): string => {
   if (!dateStr) return "";
 
@@ -44,7 +44,7 @@ export const formatDateMonthYear = (
 };
 
 export const formatDateDayMonth = (
-  dateStr: string | undefined | null
+  dateStr: string | undefined | null,
 ): string => {
   if (!dateStr) return "";
 
@@ -59,7 +59,7 @@ export const formatDateDayMonth = (
 
 export const formatNumber = (
   num: number | undefined | null,
-  round = false
+  round = false,
 ): string => {
   if (!num) return "0";
 
@@ -90,4 +90,8 @@ export const formatDateReadable = (d: string | undefined) => {
     month: "short",
     year: "numeric",
   });
+};
+
+export const getMediaQuery = (media: string) => {
+  return media.replace("@media ", "");
 };

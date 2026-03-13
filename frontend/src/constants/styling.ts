@@ -5,6 +5,7 @@ export const colors = {
   accent: "#ff8c00",
   textPrimary: "#f5f5f5",
   textMuted: "#aaaaaa",
+  textBlack: "#000000",
   border: "#2a2a2a",
   error: "#ff4d4d",
   success: "#00ff88",
@@ -123,11 +124,7 @@ export const transitions = {
 };
 
 export const breakpoints = {
-  mobile: "480px",
-  tablet: "768px",
-  laptop: "1024px",
-  desktop: "1280px",
-  wide: "1536px",
+  phone: "@media (max-width: 768px)",
 };
 
 export const chartStyles = {

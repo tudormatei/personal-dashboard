@@ -91,11 +91,19 @@ def get_next_milestone(
     total_hours: float,
     milestones: list[Milestone],
 ) -> Optional[NextMilestone]:
-    next_milestone = next((m for m in milestones if total_hours < m.hours), None)
-    if not next_milestone:
+    next_index = next(
+        (i for i, m in enumerate(milestones) if total_hours < m.hours), None
+    )
+    if next_index is None:
         return None
 
-    progress_pct = min(100, round((total_hours / next_milestone.hours) * 100))
+    next_milestone = milestones[next_index]
+    previous_milestone_hours = milestones[next_index - 1].hours if next_index > 0 else 0
+
+    band_total = next_milestone.hours - previous_milestone_hours
+    band_progress = total_hours - previous_milestone_hours
+
+    progress_pct = min(100, max(0, round((band_progress / band_total) * 100)))
     distance_hours = pretty_round(max(0, next_milestone.hours - total_hours))
 
     return NextMilestone(

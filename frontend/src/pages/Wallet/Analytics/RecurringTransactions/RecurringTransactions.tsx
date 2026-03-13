@@ -40,18 +40,16 @@ const RecurringTransactions: React.FC<RecurringTransactionsProps> = ({
 }) => {
   return (
     <>
-      {recurring && (
+      {recurring && recurring.recurring.length > 0 && (
         <>
           <AnalyiticsTitle>Recurring Transactions</AnalyiticsTitle>
-          <FlexWrapper>
-            {recurring && recurring.recurring.length > 0 ? (
-              recurring.recurring.map((r) => (
+          {
+            <FlexWrapper>
+              {recurring.recurring.map((r) => (
                 <Category key={r.category || "uncategorized"} category={r} />
-              ))
-            ) : (
-              <div>No recurring transactions</div>
-            )}
-          </FlexWrapper>
+              ))}
+            </FlexWrapper>
+          }
         </>
       )}
     </>
@@ -60,8 +58,7 @@ const RecurringTransactions: React.FC<RecurringTransactionsProps> = ({
 
 export default RecurringTransactions;
 
-type RecurringCategoryGroup =
-  components["schemas"]["RecurringCategoryGroup-Output"];
+type RecurringCategoryGroup = components["schemas"]["RecurringCategoryGroup"];
 
 type CategoryProps = {
   category: RecurringCategoryGroup;

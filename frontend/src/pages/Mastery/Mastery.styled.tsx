@@ -8,6 +8,18 @@ import {
   breakpoints,
 } from "../../constants/styling";
 
+export const StatContainer = styled.div`
+  display: flex;
+  gap: ${spacing.md};
+  flex-wrap: wrap;
+
+  ${breakpoints.phone} {
+    width: 100%;
+    gap: ${spacing.sm};
+    align-self: stretch;
+  }
+`;
+
 export const Stat = styled.span`
   background: rgba(255, 140, 0, 0.08);
   color: ${colors.textPrimary};
@@ -16,26 +28,42 @@ export const Stat = styled.span`
   border-radius: ${radii.full};
   font-size: ${typography.fontSize.sm};
   font-weight: ${typography.fontWeight.medium};
+  white-space: nowrap;
+
+  ${breakpoints.phone} {
+    flex: 1 1 calc(50% - ${spacing.sm});
+    min-width: 0;
+    justify-content: center;
+    text-align: center;
+    padding: 0.7rem 0.85rem;
+  }
 `;
 
 export const FormCard = styled.section`
   background-color: ${colors.surface};
   border-radius: ${radii.xl};
   padding: ${spacing.lg};
+
+  ${breakpoints.phone} {
+    padding: ${spacing.md};
+    border-radius: ${radii.lg};
+  }
 `;
 
 export const FormGrid = styled.div`
   display: grid;
   grid-template-columns: 2fr 1fr 1fr auto;
   gap: ${spacing.md};
-  align-items: end;
+  align-items: center;
+  justify-content: center;
 
-  @media (max-width: ${breakpoints.laptop}) {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  @media (max-width: ${breakpoints.tablet}) {
+  ${breakpoints.phone} {
     grid-template-columns: 1fr;
+    gap: ${spacing.sm};
+
+    > button {
+      width: 100%;
+    }
   }
 `;
 
@@ -44,12 +72,20 @@ export const InputGroup = styled.div`
   flex-direction: column;
   gap: ${spacing.xs};
   min-width: 0;
+
+  ${breakpoints.phone} {
+    width: 100%;
+  }
 `;
 
 export const List = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${spacing.lg};
+
+  ${breakpoints.phone} {
+    gap: ${spacing.md};
+  }
 `;
 
 export const EmptyState = styled(motion.div)`
@@ -68,6 +104,19 @@ export const EmptyState = styled(motion.div)`
     margin: 0;
     color: ${colors.textMuted};
   }
+
+  ${breakpoints.phone} {
+    padding: ${spacing.lg};
+
+    h3 {
+      font-size: ${typography.fontSize.lg};
+    }
+
+    p {
+      font-size: ${typography.fontSize.sm};
+      line-height: 1.5;
+    }
+  }
 `;
 
 export const ActivityCard = styled(motion.article)`
@@ -81,21 +130,25 @@ export const ActivityCard = styled(motion.article)`
   display: flex;
   flex-direction: column;
   gap: ${spacing.lg};
+  overflow: hidden;
 
-  @media (max-width: ${breakpoints.tablet}) {
+  ${breakpoints.phone} {
     padding: ${spacing.md};
     gap: ${spacing.md};
+    border-radius: ${radii.lg};
   }
 `;
 
 export const CardTop = styled.div`
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: ${spacing.md};
 
-  @media (max-width: ${breakpoints.mobile}) {
-    flex-direction: column;
+  ${breakpoints.phone} {
+    flex-direction: row;
+    align-items: stretch;
+    gap: ${spacing.sm};
   }
 `;
 
@@ -103,10 +156,16 @@ export const ActivityTitle = styled.h2`
   margin: 0;
   font-size: clamp(1.2rem, 2vw, 1.7rem);
   line-height: 1.1;
+  word-break: break-word;
+
+  ${breakpoints.phone} {
+    font-size: 1.2rem;
+    line-height: 1.2;
+  }
 `;
 
 export const ActivityMeta = styled.div`
-  margin-top: ${spacing.xs};
+  margin-top: ${spacing.sm};
   display: flex;
   flex-wrap: wrap;
   gap: ${spacing.sm};
@@ -115,6 +174,13 @@ export const ActivityMeta = styled.div`
 
   span {
     position: relative;
+    min-width: 0;
+    word-break: break-word;
+  }
+
+  ${breakpoints.phone} {
+    gap: 0.45rem 0.65rem;
+    font-size: ${typography.fontSize.xs};
   }
 `;
 
@@ -125,7 +191,11 @@ export const CompletedMilestonesRow = styled.div`
   gap: ${spacing.sm};
   flex-wrap: wrap;
   padding-top: ${spacing.xs};
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+
+  ${breakpoints.phone} {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 `;
 
 export const CompletedMilestonesLabel = styled.div`
@@ -135,6 +205,10 @@ export const CompletedMilestonesLabel = styled.div`
   color: ${colors.textMuted};
   font-size: ${typography.fontSize.sm};
   white-space: nowrap;
+
+  ${breakpoints.phone} {
+    white-space: normal;
+  }
 `;
 
 export const CompletedMilestonesCount = styled.span`
@@ -158,6 +232,10 @@ export const CompletedMilestonesChips = styled.div`
   gap: 0.45rem;
   flex-wrap: wrap;
   min-width: 0;
+
+  ${breakpoints.phone} {
+    width: 100%;
+  }
 `;
 
 export const CompletedMilestoneChip = styled.div`
@@ -171,6 +249,8 @@ export const CompletedMilestoneChip = styled.div`
   font-size: ${typography.fontSize.xs};
   font-weight: ${typography.fontWeight.medium};
   line-height: 1;
+  max-width: 100%;
+  word-break: break-word;
 `;
 
 export const CompletedMilestoneMore = styled.div`
@@ -200,6 +280,11 @@ export const StreakPill = styled.div<{ $active: boolean }>`
   color: ${({ $active }) => ($active ? colors.warning : colors.textMuted)};
   border: 1px solid
     ${({ $active }) => ($active ? "rgba(255, 140, 0, 0.28)" : colors.border)};
+
+  ${breakpoints.phone} {
+    align-self: flex-start;
+    white-space: normal;
+  }
 `;
 
 export const MainGrid = styled.div`
@@ -208,8 +293,9 @@ export const MainGrid = styled.div`
   gap: ${spacing.lg};
   align-items: stretch;
 
-  @media (max-width: ${breakpoints.tablet}) {
+  ${breakpoints.phone} {
     grid-template-columns: 1fr;
+    gap: ${spacing.md};
   }
 `;
 
@@ -218,6 +304,7 @@ export const RingWrap = styled.div`
   width: 132px;
   height: 132px;
   margin: 0 auto;
+  flex-shrink: 0;
 `;
 
 export const RingCenter = styled.div`
@@ -232,6 +319,10 @@ export const RingCenter = styled.div`
 export const RingValue = styled.div`
   font-size: ${typography.fontSize.xl};
   font-weight: ${typography.fontWeight.black};
+
+  ${breakpoints.phone} {
+    font-size: ${typography.fontSize.lg};
+  }
 `;
 
 export const RingSubtext = styled.div`
@@ -239,12 +330,18 @@ export const RingSubtext = styled.div`
   font-size: ${typography.fontSize.xs};
   text-transform: uppercase;
   letter-spacing: 0.12em;
+  text-align: center;
+
+  ${breakpoints.phone} {
+    letter-spacing: 0.08em;
+  }
 `;
 
 export const StatsPanel = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${spacing.md};
+  min-width: 0;
 `;
 
 export const StatsGrid = styled.div`
@@ -252,12 +349,8 @@ export const StatsGrid = styled.div`
   grid-template-columns: repeat(4, 1fr);
   gap: ${spacing.sm};
 
-  @media (max-width: ${breakpoints.laptop}) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  @media (max-width: ${breakpoints.mobile}) {
-    grid-template-columns: 1fr;
+  ${breakpoints.phone} {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 `;
 
@@ -266,6 +359,11 @@ export const StatBox = styled.div`
   border: 1px solid ${colors.border};
   border-radius: ${radii.lg};
   padding: ${spacing.md};
+  min-width: 0;
+
+  ${breakpoints.phone} {
+    padding: ${spacing.sm};
+  }
 `;
 
 export const StatLabel = styled.div`
@@ -274,17 +372,24 @@ export const StatLabel = styled.div`
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin-bottom: 0.35rem;
+  line-height: 1.4;
 `;
 
 export const StatValue = styled.div`
   font-size: ${typography.fontSize.lg};
   font-weight: ${typography.fontWeight.bold};
+  word-break: break-word;
+
+  ${breakpoints.phone} {
+    font-size: ${typography.fontSize.base};
+  }
 `;
 
 export const ProgressBlock = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${spacing.xs};
+  min-width: 0;
 `;
 
 export const ProgressHeader = styled.div`
@@ -292,6 +397,12 @@ export const ProgressHeader = styled.div`
   justify-content: space-between;
   gap: ${spacing.sm};
   font-size: ${typography.fontSize.sm};
+
+  ${breakpoints.phone} {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
 `;
 
 export const ProgressLabel = styled.span`
@@ -332,12 +443,18 @@ export const NextMilestoneCard = styled.div`
   );
   border-radius: ${radii.lg};
   padding: ${spacing.md};
+  min-width: 0;
+
+  ${breakpoints.phone} {
+    padding: ${spacing.sm};
+  }
 `;
 
 export const MilestoneBadge = styled.div`
   display: inline-flex;
   align-items: center;
   width: fit-content;
+  max-width: 100%;
   border-radius: ${radii.full};
   background: rgba(255, 140, 0, 0.14);
   color: ${colors.accent};
@@ -345,20 +462,48 @@ export const MilestoneBadge = styled.div`
   padding: 0.45rem 0.8rem;
   font-size: ${typography.fontSize.sm};
   font-weight: ${typography.fontWeight.bold};
+  word-break: break-word;
+
+  ${breakpoints.phone} {
+    font-size: ${typography.fontSize.xs};
+  }
 `;
 
 export const MilestoneMeta = styled.div`
   margin-top: 0.55rem;
   color: ${colors.textMuted};
   font-size: ${typography.fontSize.sm};
+  line-height: 1.5;
+
+  ${breakpoints.phone} {
+    font-size: ${typography.fontSize.xs};
+  }
 `;
 
 export const AddCustomHoursForm = styled.div`
   display: flex;
   width: 100%;
-  flex-direction: row;
   flex-wrap: wrap;
-  justify-content: center;
   align-items: center;
   gap: ${spacing.sm};
+
+  ${breakpoints.phone} {
+    justify-content: center;
+
+    > div {
+      width: 100%;
+    }
+
+    > button:not(:last-of-type) {
+      flex: 0 0 auto;
+      padding: 0.4rem 0.6rem;
+      font-size: ${typography.fontSize.xs};
+    }
+
+    /* big "Log time" button */
+    > button:last-of-type {
+      width: 100%;
+      margin-top: ${spacing.xs};
+    }
+  }
 `;

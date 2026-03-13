@@ -35,7 +35,7 @@ export const StyledButton = styled.button<StyledButtonProps>`
 
   color: ${({ variant, disabled }) => {
     if (disabled) return colors.textMuted;
-    return variant === "primary" ? colors.textPrimary : colors.textPrimary;
+    return variant === "primary" ? colors.textBlack : colors.textPrimary;
   }};
 
   &:hover {

@@ -25,26 +25,30 @@ import {
 } from "recharts";
 import type { AlertData } from "../../types/types";
 import type { operations } from "../../types/api-routes";
-import { H2, SubHeader } from "../../components/Typography/Headings";
+import { H1, SubHeader } from "../../components/Typography/Headings";
 import { DashboardGrid, FlexWrapper } from "../../components/Layout/Layout";
+import { useIsPhone } from "../../hooks/useIsPhone";
 
 type WorkoutStats =
   operations["workout_history_api_health_workouts_get"]["responses"][200]["content"]["application/json"];
 
 const groupByMonth = (dailyStats: { date: string; duration: number }[]) => {
-  return dailyStats.reduce((acc, stat) => {
-    const date = new Date(stat.date);
-    const monthKey = `${date.getFullYear()}-${String(
-      date.getMonth() + 1
-    ).padStart(2, "0")}`;
-    if (!acc[monthKey]) acc[monthKey] = [];
-    acc[monthKey].push(stat);
-    return acc;
-  }, {} as Record<string, { date: string; duration: number }[]>);
+  return dailyStats.reduce(
+    (acc, stat) => {
+      const date = new Date(stat.date);
+      const monthKey = `${date.getFullYear()}-${String(
+        date.getMonth() + 1,
+      ).padStart(2, "0")}`;
+      if (!acc[monthKey]) acc[monthKey] = [];
+      acc[monthKey].push(stat);
+      return acc;
+    },
+    {} as Record<string, { date: string; duration: number }[]>,
+  );
 };
 
 const generateCalendarRange = (
-  dailyStats: { date: string; duration: number }[]
+  dailyStats: { date: string; duration: number }[],
 ) => {
   if (!dailyStats.length) return [];
 
@@ -58,7 +62,7 @@ const generateCalendarRange = (
     isPlaceholder?: boolean;
   }[] = [];
   const workouts = new Map(
-    dailyStats.map((d) => [new Date(d.date).toDateString(), d.duration])
+    dailyStats.map((d) => [new Date(d.date).toDateString(), d.duration]),
   );
 
   const current = new Date(firstDate);
@@ -86,6 +90,8 @@ const generateCalendarRange = (
 };
 
 const Workouts = () => {
+  const isPhone = useIsPhone();
+
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState<AlertData | null>(null);
 
@@ -114,14 +120,14 @@ const Workouts = () => {
   };
 
   const weekdayData = Object.entries(data?.sessions_per_weekday ?? {}).map(
-    ([day, count]) => ({ day, count })
+    ([day, count]) => ({ day, count }),
   );
 
   const monthlyStats = groupByMonth(data?.daily_stats ?? []);
 
   return (
     <>
-      <H2>Workout Dashboard</H2>
+      <H1>Workout Dashboard</H1>
 
       <FilterBar onFilter={fetchData} />
 
@@ -167,7 +173,7 @@ const Workouts = () => {
                     {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(
                       (d) => (
                         <div key={d}>{d}</div>
-                      )
+                      ),
                     )}
                   </WeekdayHeader>
                   <CalendarGrid>
@@ -192,7 +198,7 @@ const Workouts = () => {
                         >
                           {d.date!.getDate()}
                         </CalendarDay>
-                      )
+                      ),
                     )}
                   </CalendarGrid>
                 </MonthContainer>
@@ -203,22 +209,42 @@ const Workouts = () => {
           <FlexWrapper>
             <SubHeader>Sessions by Weekday</SubHeader>
             <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={weekdayData}>
+              <BarChart
+                data={weekdayData}
+                margin={{
+                  top: 8,
+                  right: isPhone ? 8 : 16,
+                  left: isPhone ? 0 : 8,
+                  bottom: isPhone ? 0 : 8,
+                }}
+              >
                 <CartesianGrid
                   strokeDasharray="3 3"
                   stroke={colors.charts.grid}
                 />
-                <XAxis dataKey="day" stroke={colors.charts.axis} />
+                <XAxis
+                  dataKey="day"
+                  stroke={colors.charts.axis}
+                  minTickGap={isPhone ? 24 : 12}
+                  tick={{ fontSize: isPhone ? 11 : 12 }}
+                />
                 <YAxis
                   stroke={colors.charts.axis}
-                  label={{
-                    value: "No. Sessions",
-                    angle: -90,
-                    position: "insideLeft",
-                    offset: 0,
-                    fill: colors.charts.axis,
-                    style: { fontSize: "0.8rem" },
-                  }}
+                  width={isPhone ? 36 : 52}
+                  tick={{ fontSize: isPhone ? 11 : 12 }}
+                  tickCount={isPhone ? 4 : 6}
+                  label={
+                    isPhone
+                      ? undefined
+                      : {
+                          value: "No. Sessions",
+                          angle: -90,
+                          position: "insideLeft",
+                          offset: 0,
+                          fill: colors.charts.axis,
+                          style: { fontSize: "0.8rem" },
+                        }
+                  }
                 />
                 <Tooltip
                   contentStyle={{
@@ -241,24 +267,42 @@ const Workouts = () => {
                 <ResponsiveContainer width="100%" height={250}>
                   <LineChart
                     data={Object.entries(data.sessions_per_week).map(
-                      ([week, count]) => ({ week, count })
+                      ([week, count]) => ({ week, count }),
                     )}
+                    margin={{
+                      top: 8,
+                      right: isPhone ? 8 : 16,
+                      left: isPhone ? 0 : 8,
+                      bottom: isPhone ? 0 : 8,
+                    }}
                   >
                     <CartesianGrid
                       strokeDasharray="3 3"
                       stroke={colors.charts.grid}
                     />
-                    <XAxis dataKey="week" stroke={colors.charts.axis} />
+                    <XAxis
+                      dataKey="week"
+                      stroke={colors.charts.axis}
+                      minTickGap={isPhone ? 24 : 12}
+                      tick={{ fontSize: isPhone ? 11 : 12 }}
+                    />
                     <YAxis
                       stroke={colors.charts.axis}
-                      label={{
-                        value: "No. Sessions",
-                        angle: -90,
-                        position: "insideLeft",
-                        offset: 0,
-                        fill: colors.charts.axis,
-                        style: { fontSize: "0.8rem" },
-                      }}
+                      width={isPhone ? 36 : 52}
+                      tick={{ fontSize: isPhone ? 11 : 12 }}
+                      tickCount={isPhone ? 4 : 6}
+                      label={
+                        isPhone
+                          ? undefined
+                          : {
+                              value: "No. Sessions",
+                              angle: -90,
+                              position: "insideLeft",
+                              offset: 0,
+                              fill: colors.charts.axis,
+                              style: { fontSize: "0.8rem" },
+                            }
+                      }
                     />
                     <Tooltip
                       contentStyle={{
@@ -273,7 +317,9 @@ const Workouts = () => {
                       type="monotone"
                       dataKey="count"
                       stroke={colors.accent}
-                      strokeWidth={2}
+                      strokeWidth={isPhone ? 1.8 : 2}
+                      dot={{ r: isPhone ? 2 : 4 }}
+                      activeDot={{ r: isPhone ? 4 : 6 }}
                       name="Sessions"
                     />
                   </LineChart>
@@ -289,24 +335,42 @@ const Workouts = () => {
                 <ResponsiveContainer width="100%" height={250}>
                   <LineChart
                     data={Object.entries(data.sessions_per_month).map(
-                      ([month, count]) => ({ month, count })
+                      ([month, count]) => ({ month, count }),
                     )}
+                    margin={{
+                      top: 8,
+                      right: isPhone ? 8 : 16,
+                      left: isPhone ? 0 : 8,
+                      bottom: isPhone ? 0 : 8,
+                    }}
                   >
                     <CartesianGrid
                       strokeDasharray="3 3"
                       stroke={colors.charts.grid}
                     />
-                    <XAxis dataKey="month" stroke={colors.charts.axis} />
+                    <XAxis
+                      dataKey="month"
+                      stroke={colors.charts.axis}
+                      minTickGap={isPhone ? 24 : 12}
+                      tick={{ fontSize: isPhone ? 11 : 12 }}
+                    />
                     <YAxis
                       stroke={colors.charts.axis}
-                      label={{
-                        value: "No. Sessions",
-                        angle: -90,
-                        position: "insideLeft",
-                        offset: 0,
-                        fill: colors.charts.axis,
-                        style: { fontSize: "0.8rem" },
-                      }}
+                      width={isPhone ? 36 : 52}
+                      tick={{ fontSize: isPhone ? 11 : 12 }}
+                      tickCount={isPhone ? 4 : 6}
+                      label={
+                        isPhone
+                          ? undefined
+                          : {
+                              value: "No. Sessions",
+                              angle: -90,
+                              position: "insideLeft",
+                              offset: 0,
+                              fill: colors.charts.axis,
+                              style: { fontSize: "0.8rem" },
+                            }
+                      }
                     />
                     <Tooltip
                       contentStyle={{
@@ -321,7 +385,9 @@ const Workouts = () => {
                       type="monotone"
                       dataKey="count"
                       stroke={colors.accent}
-                      strokeWidth={2}
+                      strokeWidth={isPhone ? 1.8 : 2}
+                      dot={{ r: isPhone ? 2 : 4 }}
+                      activeDot={{ r: isPhone ? 4 : 6 }}
                       name="Sessions"
                     />
                   </LineChart>

@@ -13,7 +13,8 @@ type ButtonProps = {
 } & Pick<
   ButtonHTMLAttributes<HTMLButtonElement>,
   "onClick" | "type" | "disabled"
->;
+> &
+  ButtonHTMLAttributes<HTMLButtonElement>;
 
 const Button: FC<ButtonProps> = ({
   children,

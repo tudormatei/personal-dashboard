@@ -27,6 +27,7 @@ import type { components, operations } from "../../types/api-routes";
 import type { AlertData } from "../../types/types";
 import { DashboardGrid, FlexWrapper } from "../../components/Layout/Layout";
 import { SubHeader } from "../../components/Typography/Headings";
+import { useIsPhone } from "../../hooks/useIsPhone";
 
 type MonteCarloResponse =
   operations["get_monte_carlo_simulation_result_api_investments_monte_carlo_simulations__job_id__get"]["responses"][200]["content"]["application/json"];
@@ -46,6 +47,8 @@ const MonteCarloSimulation = ({
   twrSeries,
   currency,
 }: MonteCarloSimulationProps) => {
+  const isPhone = useIsPhone();
+
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState<AlertData | null>(null);
 
@@ -87,7 +90,7 @@ const MonteCarloSimulation = ({
 
       const poll = async () => {
         const r = await fetch(
-          `/api/investments/monte-carlo-simulations/${job.job_id}`
+          `/api/investments/monte-carlo-simulations/${job.job_id}`,
         );
         const response = (await r.json()) as MonteCarloResponse;
         if (response.status === "finished" && response.result) {
@@ -166,13 +169,13 @@ const MonteCarloSimulation = ({
           <Card
             title="Baseline End Value"
             value={`${formatNumber(
-              data?.portfolioProjection.at(-1)?.baseline
+              data?.portfolioProjection.at(-1)?.baseline,
             )} ${currency}`}
           />
           <Card
             title="Median End Value"
             value={`${formatNumber(
-              data?.portfolioProjection.at(-1)?.p50
+              data?.portfolioProjection.at(-1)?.p50,
             )} ${currency}`}
           />
           {data?.goalAchievement && (
@@ -190,7 +193,15 @@ const MonteCarloSimulation = ({
       {data?.portfolioProjection && (
         <FlexWrapper>
           <ResponsiveContainer width="100%" height={400}>
-            <LineChart data={data.portfolioProjection}>
+            <LineChart
+              data={data.portfolioProjection}
+              margin={{
+                top: 8,
+                right: isPhone ? 8 : 16,
+                left: isPhone ? 0 : 8,
+                bottom: isPhone ? 0 : 8,
+              }}
+            >
               <CartesianGrid
                 strokeDasharray="3 3"
                 stroke={colors.charts.grid}
@@ -199,18 +210,27 @@ const MonteCarloSimulation = ({
                 stroke={colors.charts.axis}
                 dataKey="date"
                 tickFormatter={(date) => `${formatDateMonthYear(date)}`}
+                minTickGap={isPhone ? 24 : 12}
+                tick={{ fontSize: isPhone ? 11 : 12 }}
               />
               <YAxis
                 domain={["auto", "auto"]}
                 stroke={colors.charts.axis}
-                label={{
-                  value: "Value ($)",
-                  angle: -90,
-                  position: "insideLeft",
-                  offset: 0,
-                  fill: colors.charts.axis,
-                  style: { fontSize: "0.8rem" },
-                }}
+                width={isPhone ? 36 : 52}
+                tick={{ fontSize: isPhone ? 11 : 12 }}
+                tickCount={isPhone ? 4 : 6}
+                label={
+                  isPhone
+                    ? undefined
+                    : {
+                        value: "Value ($)",
+                        angle: -90,
+                        position: "insideLeft",
+                        offset: 0,
+                        fill: colors.charts.axis,
+                        style: { fontSize: "0.8rem" },
+                      }
+                }
                 tickFormatter={(value) => `${formatNumber(value)}`}
               />
               <Tooltip
@@ -236,6 +256,7 @@ const MonteCarloSimulation = ({
                 dataKey="p5"
                 stroke={colors.charts.p5}
                 dot={false}
+                strokeWidth={isPhone ? 1.8 : 2}
                 name="5th percentile"
               />
               <Line
@@ -243,6 +264,7 @@ const MonteCarloSimulation = ({
                 dataKey="p25"
                 stroke={colors.charts.p25}
                 dot={false}
+                strokeWidth={isPhone ? 1.8 : 2}
                 name="25th percentile"
               />
               <Line
@@ -250,6 +272,7 @@ const MonteCarloSimulation = ({
                 dataKey="p50"
                 stroke={colors.charts.p50}
                 dot={false}
+                strokeWidth={isPhone ? 1.8 : 2}
                 name="Median"
               />
               <Line
@@ -257,6 +280,7 @@ const MonteCarloSimulation = ({
                 dataKey="p75"
                 stroke={colors.charts.p75}
                 dot={false}
+                strokeWidth={isPhone ? 1.8 : 2}
                 name="75th percentile"
               />
               <Line
@@ -264,6 +288,7 @@ const MonteCarloSimulation = ({
                 dataKey="p95"
                 stroke={colors.charts.p95}
                 dot={false}
+                strokeWidth={isPhone ? 1.8 : 2}
                 name="95th percentile"
               />
               <Line
@@ -271,6 +296,7 @@ const MonteCarloSimulation = ({
                 dataKey="baseline"
                 stroke={colors.charts.baseline}
                 dot={false}
+                strokeWidth={isPhone ? 1.2 : 1.5}
                 name="Baseline"
               />
               {params.targetValue && (

@@ -20,11 +20,14 @@ import { formatDateDayMonth, formatNumber } from "../../utils/utils";
 import type { operations } from "../../types/api-routes";
 import type { AlertData } from "../../types/types";
 import Select from "../../components/Select/Select";
+import { useIsPhone } from "../../hooks/useIsPhone";
 
 type SummaryData =
   operations["summary_api_bank_summary_get"]["responses"][200]["content"]["application/json"];
 
 const Summary = () => {
+  const isPhone = useIsPhone();
+
   const [data, setData] = useState<SummaryData>(null);
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState<AlertData | null>(null);
@@ -100,7 +103,15 @@ const Summary = () => {
               ]}
             />
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={data.chart_data}>
+              <BarChart
+                data={data.chart_data}
+                margin={{
+                  top: 8,
+                  right: isPhone ? 8 : 16,
+                  left: isPhone ? 0 : 8,
+                  bottom: isPhone ? 0 : 8,
+                }}
+              >
                 <CartesianGrid
                   strokeDasharray="3 3"
                   stroke={colors.charts.grid}
@@ -109,17 +120,26 @@ const Summary = () => {
                   dataKey="date"
                   stroke={colors.charts.axis}
                   tickFormatter={(d) => formatDateDayMonth(d)}
+                  minTickGap={isPhone ? 24 : 12}
+                  tick={{ fontSize: isPhone ? 11 : 12 }}
                 />
                 <YAxis
                   stroke={colors.charts.axis}
-                  label={{
-                    value: "Value",
-                    angle: -90,
-                    position: "insideLeft",
-                    offset: 0,
-                    fill: colors.charts.axis,
-                    style: { fontSize: "0.8rem" },
-                  }}
+                  width={isPhone ? 36 : 52}
+                  tick={{ fontSize: isPhone ? 11 : 12 }}
+                  tickCount={isPhone ? 4 : 6}
+                  label={
+                    isPhone
+                      ? undefined
+                      : {
+                          value: "Value",
+                          angle: -90,
+                          position: "insideLeft",
+                          offset: 0,
+                          fill: colors.charts.axis,
+                          style: { fontSize: "0.8rem" },
+                        }
+                  }
                   tickFormatter={(v) => formatNumber(v)}
                 />
                 <Tooltip
@@ -149,7 +169,7 @@ const Summary = () => {
                   type="monotone"
                   dataKey="unified_balance"
                   stroke={colors.charts.primary}
-                  strokeWidth={2}
+                  strokeWidth={isPhone ? 1.8 : 2}
                   dot={false}
                   name="Total Value"
                 />

@@ -1,4 +1,4 @@
-import { H2 } from "../../components/Typography/Headings";
+import { H1 } from "../../components/Typography/Headings";
 import Analytics from "./Analytics/Analytics";
 import Summary from "./Summary";
 import Transactions from "./Transactions/Transactions";
@@ -6,7 +6,7 @@ import Transactions from "./Transactions/Transactions";
 const Wallet = () => {
   return (
     <>
-      <H2>My Wallet</H2>
+      <H1>My Wallet</H1>
 
       <Summary />
       <Transactions />
