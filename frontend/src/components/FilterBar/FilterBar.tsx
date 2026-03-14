@@ -151,7 +151,7 @@ const FilterBar = ({
           </Button>
           <Button
             variant="secondary"
-            onClick={() => quickSet("2005-05-01")}
+            onClick={() => quickSet("2020-01-01")}
             disabled={loading}
           >
             All

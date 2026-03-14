@@ -79,7 +79,6 @@ async def request_financial_data(start_date, end_date):
 
     async with aiohttp.ClientSession(headers=headers) as session:
         async with session.get(f"{BASE_URL}/SendRequest", params=send_params) as resp:
-            print("Actual URL:", resp.url)
             send_text = await resp.text()
             send_data = xmltodict.parse(send_text)
 
@@ -211,6 +210,10 @@ def build_final_report(all_reports: List[Dict[str, Any]]) -> Dict[str, Any]:
             )
 
         statement_trades = statement["Trades"]["Trade"]
+
+        if isinstance(statement_trades, dict):
+            statement_trades = [statement_trades]
+
         for t in statement_trades:
             response["trades"].append(
                 {

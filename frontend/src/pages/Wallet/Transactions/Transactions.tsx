@@ -49,7 +49,7 @@ const Transactions = () => {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [subcategoryFilter, setSubcategoryFilter] = useState("");
   const [walletStartDate, setWalletStartDate] = useState(
-    formatDate(new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000))
+    formatDate(new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000)),
   );
   const [walletEndDate, setWalletEndDate] = useState(formatDate(today));
   const [sortOrder, setSortOrder] = useState("asc");
@@ -106,6 +106,9 @@ const Transactions = () => {
       try {
         const res = await fetch(`/api/bank/transactions?${params.toString()}`);
         const json = await res.json();
+        if (json.transactions.length === 0)
+          setAlert({ text: "No transactions found", type: "info" });
+
         setWalletData(json);
         setPage(pageNumber);
       } catch {
@@ -124,7 +127,7 @@ const Transactions = () => {
       sortOrder,
       categoryFilter,
       subcategoryFilter,
-    ]
+    ],
   );
 
   useEffect(() => {
@@ -183,7 +186,7 @@ const Transactions = () => {
                 (category) => ({
                   label: category,
                   value: category,
-                })
+                }),
               ) || []),
             ]}
           />
@@ -197,7 +200,7 @@ const Transactions = () => {
                 (category) => ({
                   label: category,
                   value: category,
-                })
+                }),
               ) || []),
             ]}
           />

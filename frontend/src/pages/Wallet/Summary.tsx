@@ -48,6 +48,9 @@ const Summary = () => {
       const url = `/api/bank/summary?${params.toString()}`;
       const res = await fetch(url);
       const json = (await res.json()) as SummaryData;
+      if (json === null)
+        setAlert({ text: "No bank statements available", type: "info" });
+
       setData(json);
     } catch {
       setAlert({ text: "Failed to fetch summary", type: "error" });

@@ -110,6 +110,8 @@ const Workouts = () => {
       const url = `/api/health/workouts?${params.toString()}`;
       const res = await fetch(url);
       const json = (await res.json()) as WorkoutStats;
+      if (json === null)
+        setAlert({ text: "No workouts found for this period", type: "info" });
       setData(json);
     } catch {
       setAlert({ text: "Something went wrong", type: "error" });

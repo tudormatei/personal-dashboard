@@ -53,6 +53,12 @@ const Macros = (): JSX.Element => {
       });
       const macrosRes = await fetch(`/api/health/macros?${params.toString()}`);
       const macrosJson = (await macrosRes.json()) as MacrosData;
+      if (macrosJson === null)
+        setAlert({
+          text: "No macros data found for this period",
+          type: "info",
+        });
+
       setMacrosData(macrosJson);
     } catch {
       setAlert({ text: "Something went wrong", type: "error" });

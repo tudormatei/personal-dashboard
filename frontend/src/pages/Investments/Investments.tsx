@@ -33,16 +33,40 @@ import type { AlertData } from "../../types/types";
 import { H1, SubHeader } from "../../components/Typography/Headings";
 import { DashboardGrid, FlexWrapper } from "../../components/Layout/Layout";
 import { useIsPhone } from "../../hooks/useIsPhone";
+import CashFlowTooltip from "./CashFlowToolTip";
 
-type Fund = {
-  date: string;
-  amount: number;
+type ActivityAccumulator = Record<
+  string,
+  {
+    activityCode: string;
+    activityDescription: string;
+    total: number;
+    count: number;
+  }
+>;
+
+type DailyAccumulator = Record<
+  string,
+  {
+    date: string;
+    inflow: number;
+    outflow: number;
+    activitiesMap: ActivityAccumulator;
+  }
+>;
+
+type ActivitySummary = {
+  activityCode: string;
+  activityDescription: string;
+  total: number;
+  count: number;
 };
 
-type DailyFundSummary = {
+export type DailyFundSummary = {
   date: string;
   inflow: number;
   outflow: number;
+  activities: ActivitySummary[];
 };
 
 type FinancialReport =
@@ -74,6 +98,12 @@ const Investments = (): JSX.Element => {
       const response = await fetch(`/api/investments?${params.toString()}`);
       if (!response.ok) throw new Error("Failed to fetch data");
       const json = await response.json();
+      if (json === null)
+        setAlert({
+          text: "No broker data found for this period",
+          type: "info",
+        });
+
       setData(json);
     } catch {
       setAlert({ text: "Something went wrong", type: "error" });
@@ -84,27 +114,48 @@ const Investments = (): JSX.Element => {
 
   const fundsData: DailyFundSummary[] = data?.statementFunds
     ? Object.values(
-        data.statementFunds.reduce<Record<string, DailyFundSummary>>(
-          (acc, fund: Fund) => {
-            const amountInBase = fund.amount;
+        data.statementFunds.reduce<DailyAccumulator>((acc, fund) => {
+          const amountInBase = fund.amount;
 
-            if (Math.abs(amountInBase) < 10) return acc;
+          if (Math.abs(amountInBase) < 10) return acc;
 
-            if (!acc[fund.date]) {
-              acc[fund.date] = { date: fund.date, inflow: 0, outflow: 0 };
-            }
+          if (!acc[fund.date]) {
+            acc[fund.date] = {
+              date: fund.date,
+              inflow: 0,
+              outflow: 0,
+              activitiesMap: {},
+            };
+          }
 
-            if (amountInBase >= 0) {
-              acc[fund.date].inflow += amountInBase;
-            } else {
-              acc[fund.date].outflow += Math.abs(amountInBase);
-            }
+          if (amountInBase >= 0) {
+            acc[fund.date].inflow += amountInBase;
+          } else {
+            acc[fund.date].outflow += Math.abs(amountInBase);
+          }
 
-            return acc;
-          },
-          {},
+          const activityKey = `${fund.activityCode}__${fund.activityDescription}`;
+
+          if (!acc[fund.date].activitiesMap[activityKey]) {
+            acc[fund.date].activitiesMap[activityKey] = {
+              activityCode: fund.activityCode,
+              activityDescription: fund.activityDescription,
+              total: 0,
+              count: 0,
+            };
+          }
+
+          acc[fund.date].activitiesMap[activityKey].total += amountInBase;
+          acc[fund.date].activitiesMap[activityKey].count += 1;
+
+          return acc;
+        }, {}),
+      ).map(({ activitiesMap, ...day }) => ({
+        ...day,
+        activities: Object.values(activitiesMap).sort(
+          (a, b) => Math.abs(b.total) - Math.abs(a.total),
         ),
-      )
+      }))
     : [];
 
   const latestValue = data?.valueOverTime.at(-1)?.total ?? 0;
@@ -583,17 +634,7 @@ const Investments = (): JSX.Element => {
                   }
                   tickFormatter={(value) => `${formatNumber(value)}`}
                 />
-                <Tooltip
-                  formatter={(value: number) => `$${formatNumber(value)}`}
-                  contentStyle={{
-                    backgroundColor: colors.charts.tooltipBg,
-                    border: `1px solid ${colors.charts.tooltipBg}`,
-                    borderRadius: radii.md,
-                    padding: spacing.sm,
-                    color: colors.charts.tooltipText,
-                  }}
-                  labelFormatter={(label) => `Date: ${formatDate(label)}`}
-                />
+                <Tooltip content={<CashFlowTooltip />} />
                 <Legend iconType="circle" />
                 <Bar
                   dataKey="inflow"

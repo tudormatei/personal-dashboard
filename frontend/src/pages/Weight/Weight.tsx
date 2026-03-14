@@ -60,6 +60,17 @@ const Weight = (): JSX.Element => {
       const maintenanceJson =
         (await maintenanceResponse.json()) as MaintenanceEstimate;
 
+      if (maintenanceJson === null)
+        setAlert({
+          text: "No maintenance data found for this period",
+          type: "info",
+        });
+      if (weightJson === null)
+        setAlert({
+          text: "No weight data found for this period",
+          type: "info",
+        });
+
       setWeightData(weightJson);
       setMaintenanceData(maintenanceJson);
     } catch {

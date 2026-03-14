@@ -66,6 +66,7 @@ const Mastery = () => {
           if (!response.ok) {
             throw new Error(`Failed to fetch activity ${item.id}`);
           }
+
           return (await response.json()) as MasteryActivityResponse;
         }),
       );
