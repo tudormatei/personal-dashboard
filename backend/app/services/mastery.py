@@ -20,29 +20,56 @@ from ..schemas.mastery import (
     Milestone,
     NextMilestone,
 )
-from ..constants.mastery import BASE_MILESTONES, DEFAULT_MAX_HOURS
+from ..constants.mastery import (
+    DEFAULT_MAX_HOURS,
+    HOURS_PER_RANK,
+    MAX_RANKS,
+    MIN_RANKS,
+    PROGRESSION_CURVE,
+    RANK_LABELS,
+)
 
 
 def pretty_round(value: float) -> float:
     return round(value * 10) / 10
 
 
-def build_milestones(max_hours: float) -> list[Milestone]:
-    points = BASE_MILESTONES + [
-        {
-            "hours": max_hours,
-            "label": "Master",
-            "short_label": f"{max_hours / 1000:g}k",
-        }
-    ]
+def _format_short(hours: float) -> str:
+    if hours >= 1000:
+        return f"{hours/1000:g}k"
+    return f"{int(hours)}h"
 
-    return [
-        Milestone(**point)
-        for point in sorted(
-            [p for p in points if p["hours"] <= max_hours],
-            key=lambda x: x["hours"],
+
+def build_milestones(max_hours: float) -> list[Milestone]:
+    rank_count = int(max_hours / HOURS_PER_RANK)
+    rank_count = max(MIN_RANKS, min(MAX_RANKS, rank_count))
+
+    milestones = []
+
+    for i in range(1, rank_count + 1):
+        progress = (i / rank_count) ** PROGRESSION_CURVE
+        hours = max(1, round(progress * max_hours))
+
+        label_index = min(i - 1, len(RANK_LABELS) - 1)
+        label = RANK_LABELS[label_index]
+
+        milestones.append(
+            Milestone(
+                label=label,
+                hours=hours,
+                short_label=_format_short(hours),
+            )
         )
-    ]
+
+    milestones.append(
+        Milestone(
+            label="Master",
+            hours=max_hours,
+            short_label=_format_short(max_hours),
+        )
+    )
+
+    return sorted(milestones, key=lambda m: m.hours)
 
 
 def calc_streak(history: list[HistoryEntry]) -> int:
