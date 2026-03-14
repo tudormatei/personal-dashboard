@@ -73,6 +73,7 @@ TRANSACTION_CATEGORIES = {
             "ns schiphol",
             "Buckaroo",
             "MTA",
+            "NS e-tickets",
         },
     },
     "Shopping": {
@@ -119,6 +120,7 @@ TRANSACTION_CATEGORIES = {
             "ziggo",
             "Vattenfall",
             "VITENS",
+            "energy",
         },
     },
 }

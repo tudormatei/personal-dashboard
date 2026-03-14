@@ -10,7 +10,7 @@ import {
 
 export const LayoutContainer = styled.div`
   display: flex;
-  height: 100vh;
+  height: 100dvh;
   width: 100%;
   background-color: ${colors.background};
   color: ${colors.textPrimary};

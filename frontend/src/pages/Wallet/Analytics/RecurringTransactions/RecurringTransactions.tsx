@@ -98,50 +98,58 @@ type OccurenceChartProps = {
   occurrences: RecurringTransactionPoint[];
 };
 
-const OccurrenceChart: React.FC<OccurenceChartProps> = ({ occurrences }) => (
-  <ChartContainer>
-    <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={occurrences}>
-        <CartesianGrid
-          stroke={chartStyles.grid.stroke}
-          strokeDasharray={chartStyles.grid.strokeDasharray}
-        />
+const OccurrenceChart: React.FC<OccurenceChartProps> = ({ occurrences }) => {
+  const chartData = occurrences.map((o) => ({
+    ...o,
+    chartAmount: Math.abs(o.amount ?? 0),
+  }));
 
-        <XAxis
-          dataKey="date"
-          stroke={chartStyles.axis.stroke}
-          tickFormatter={(d) => formatDateDayMonth(d)}
-          tick={{ fill: chartStyles.axis.stroke, fontSize: 12 }}
-        />
+  return (
+    <ChartContainer>
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={chartData}>
+          <CartesianGrid
+            stroke={chartStyles.grid.stroke}
+            strokeDasharray={chartStyles.grid.strokeDasharray}
+          />
 
-        <YAxis
-          stroke={chartStyles.axis.stroke}
-          tick={{ fill: chartStyles.axis.stroke, fontSize: 12 }}
-        />
+          <XAxis
+            dataKey="date"
+            stroke={chartStyles.axis.stroke}
+            tickFormatter={(d) => formatDateDayMonth(d)}
+            tick={{ fill: chartStyles.axis.stroke, fontSize: 12 }}
+          />
 
-        <Tooltip
-          contentStyle={{
-            backgroundColor: chartStyles.tooltip.backgroundColor,
-            border: chartStyles.tooltip.border,
-            borderRadius: chartStyles.tooltip.borderRadius,
-            padding: chartStyles.tooltip.padding,
-            color: chartStyles.tooltip.color,
-          }}
-          labelFormatter={(label) => `Date: ${formatDate(label)}`}
-        />
+          <YAxis
+            domain={["auto", "auto"]}
+            stroke={chartStyles.axis.stroke}
+            tick={{ fill: chartStyles.axis.stroke, fontSize: 12 }}
+          />
 
-        <Line
-          type="monotone"
-          dataKey="amount"
-          name="Amount"
-          stroke={chartStyles.line.stroke}
-          strokeWidth={chartStyles.line.strokeWidth}
-          dot={true}
-        />
-      </LineChart>
-    </ResponsiveContainer>
-  </ChartContainer>
-);
+          <Tooltip
+            contentStyle={{
+              backgroundColor: chartStyles.tooltip.backgroundColor,
+              border: chartStyles.tooltip.border,
+              borderRadius: chartStyles.tooltip.borderRadius,
+              padding: chartStyles.tooltip.padding,
+              color: chartStyles.tooltip.color,
+            }}
+            labelFormatter={(label) => `Date: ${formatDate(label)}`}
+          />
+
+          <Line
+            type="monotone"
+            dataKey="chartAmount"
+            name="Amount"
+            stroke={chartStyles.line.stroke}
+            strokeWidth={chartStyles.line.strokeWidth}
+            dot={true}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </ChartContainer>
+  );
+};
 
 type RecurringTransaction = components["schemas"]["RecurringTransaction"];
 
