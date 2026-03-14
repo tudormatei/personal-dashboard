@@ -1,5 +1,4 @@
-from datetime import datetime
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 import os
 from typing import Any, Dict, List
 import aiohttp
@@ -7,9 +6,23 @@ import numpy as np
 import pandas as pd
 import xmltodict
 import asyncio
+from zoneinfo import ZoneInfo
 
 from ..utils.formatting import iso_to_yyyymmdd, yyyymmdd_to_iso
 from ..constants.investments import ACCOUNT_INCEPTION, BASE_URL, DATE_FMT, FLEX_VERSION
+
+
+DATE_FMT = "%Y-%m-%d"
+IBKR_TZ = ZoneInfo("America/New_York")
+
+
+def latest_available_flex_date(now: datetime | None = None):
+    now = now.astimezone(IBKR_TZ) if now else datetime.now(IBKR_TZ)
+
+    if now.time() < time(0, 15):
+        return now.date() - timedelta(days=2)
+
+    return now.date() - timedelta(days=1)
 
 
 async def request_full_period(start_date: str, end_date: str):
@@ -17,14 +30,17 @@ async def request_full_period(start_date: str, end_date: str):
         return None
 
     start = max(
-        datetime.strptime(start_date, DATE_FMT),
-        datetime.strptime(ACCOUNT_INCEPTION, DATE_FMT),
+        datetime.strptime(start_date, DATE_FMT).date(),
+        datetime.strptime(ACCOUNT_INCEPTION, DATE_FMT).date(),
     )
-    end = datetime.strptime(end_date, DATE_FMT)
+    end = datetime.strptime(end_date, DATE_FMT).date()
 
-    today = datetime.today().date()
-    if end.date() >= today:
-        end = datetime.combine(today - timedelta(days=1), datetime.min.time())
+    max_end = latest_available_flex_date()
+    if end > max_end:
+        end = max_end
+
+    if start > end:
+        return None
 
     all_reports = []
     chunk_start = start
@@ -41,12 +57,10 @@ async def request_full_period(start_date: str, end_date: str):
 
         chunk_start = chunk_end + timedelta(days=1)
 
-    if len(all_reports) == 0:
+    if not all_reports:
         return None
 
-    merged_report = build_final_report(all_reports)
-
-    return merged_report
+    return build_final_report(all_reports)
 
 
 async def request_financial_data(start_date, end_date):
@@ -65,6 +79,7 @@ async def request_financial_data(start_date, end_date):
 
     async with aiohttp.ClientSession(headers=headers) as session:
         async with session.get(f"{BASE_URL}/SendRequest", params=send_params) as resp:
+            print("Actual URL:", resp.url)
             send_text = await resp.text()
             send_data = xmltodict.parse(send_text)
 
