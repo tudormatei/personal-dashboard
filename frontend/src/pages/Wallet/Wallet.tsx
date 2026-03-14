@@ -6,7 +6,7 @@ import Transactions from "./Transactions/Transactions";
 const Wallet = () => {
   return (
     <>
-      <H1>My Wallet</H1>
+      <H1>Wallet Dashboard</H1>
 
       <Summary />
       <Transactions />

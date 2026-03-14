@@ -3,8 +3,10 @@
 Track your health metrics, investments, expenses, and habits in one place and easily import Apple Health data.
 
 ![Weight Page](./docs/weight.png)
-![Macros Page](./docs/macros.png)
-![Workouts Page](./docs/workouts.png)
+![Workouts Page](./docs/workout.png)
+![Investments Page](./docs/investments1.png)
+![Expenses Page](./docs/wallet1.png)
+![Habits Page](./docs/habits.png)
 
 ### Description
 

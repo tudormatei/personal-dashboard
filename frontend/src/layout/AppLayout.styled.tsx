@@ -18,7 +18,7 @@ export const LayoutContainer = styled.div`
   overflow: hidden;
 
   ${breakpoints.phone} {
-    flex-direction: column-reverse;
+    flex-direction: column;
   }
 `;
 

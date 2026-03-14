@@ -188,7 +188,7 @@ const Mastery = () => {
 
   return (
     <>
-      <H1>Mastery Quest</H1>
+      <H1>Mastery Dashboard</H1>
 
       <StatContainer>
         <Stat>{activities.length} activities</Stat>
