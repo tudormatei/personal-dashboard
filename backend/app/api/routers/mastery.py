@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Response, status
 
 from ...schemas.mastery import (
     ActivityCreateRequest,
@@ -13,6 +13,7 @@ from ...services.mastery import (
     get_activity,
     get_activities,
     log_hours,
+    remove_activity,
 )
 
 router = APIRouter(prefix="/mastery", tags=["mastery"])
@@ -76,3 +77,15 @@ def log_activity_hours(
         )
 
     return activity
+
+
+@router.delete("/{activity_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_mastery_activity(activity_id: int) -> Response:
+    deleted = remove_activity(activity_id)
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Activity not found",
+        )
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

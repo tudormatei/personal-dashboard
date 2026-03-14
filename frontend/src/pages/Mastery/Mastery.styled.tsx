@@ -120,6 +120,7 @@ export const EmptyState = styled(motion.div)`
 `;
 
 export const ActivityCard = styled(motion.article)`
+  position: relative;
   background: linear-gradient(
     180deg,
     rgba(17, 17, 17, 0.96),

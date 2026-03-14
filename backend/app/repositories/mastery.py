@@ -157,3 +157,31 @@ def update_activity_total_hours(activity_id: int, total_hours: float):
 
     conn.commit()
     conn.close()
+
+
+def delete_activity(activity_id: int) -> bool:
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        DELETE FROM mastery_history
+        WHERE activity_id = ?
+        """,
+        (activity_id,),
+    )
+
+    cur.execute(
+        """
+        DELETE FROM mastery_activities
+        WHERE id = ?
+        """,
+        (activity_id,),
+    )
+
+    deleted = cur.rowcount > 0
+
+    conn.commit()
+    conn.close()
+
+    return deleted

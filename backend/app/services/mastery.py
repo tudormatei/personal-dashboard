@@ -2,6 +2,7 @@ from datetime import date, datetime, timedelta
 from typing import Optional
 
 from ..repositories.mastery import (
+    delete_activity,
     fetch_activities,
     fetch_activity,
     fetch_activity_history,
@@ -215,3 +216,11 @@ def log_hours(activity_id: int, payload: LogHoursRequest) -> Optional[ActivityRe
 
     updated_activity = fetch_activity(activity_id)
     return build_activity_response(updated_activity)
+
+
+def remove_activity(activity_id: int) -> bool:
+    activity = fetch_activity(activity_id)
+    if not activity:
+        return False
+
+    return delete_activity(activity_id)

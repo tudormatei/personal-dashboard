@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { FiCheck } from "react-icons/fi";
+import { FiCheck, FiX } from "react-icons/fi";
 
 import {
   ActivityCard,
@@ -49,6 +49,7 @@ type Props = {
   onQuickAddChange: (activityId: number, value: string) => void;
   onSubmitQuickAdd: (activityId: number) => void;
   onAddHours: (activityId: number, hours: number) => void;
+  onDelete: (activityId: number) => void;
 };
 
 const prettyHours = (hours: number) =>
@@ -62,6 +63,7 @@ const MasteryActivityItem = ({
   onAddHours,
   onToggle,
   isExpanded,
+  onDelete,
 }: Props) => {
   const pct = activity.stats.progress_pct / 100;
   const circumference = 2 * Math.PI * 54;
@@ -94,6 +96,30 @@ const MasteryActivityItem = ({
             ? `${activity.stats.streak_days} day`
             : "No streak yet"}
         </StreakPill>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(activity.id);
+          }}
+          aria-label="Delete activity"
+          style={{
+            position: "absolute",
+            top: 12,
+            right: 12,
+            border: "none",
+            background: "transparent",
+            color: "white",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 6,
+            borderRadius: 6,
+            opacity: 0.6,
+          }}
+        >
+          <FiX size={16} />
+        </button>
       </CardTop>
 
       {isExpanded && (

@@ -186,6 +186,42 @@ const Mastery = () => {
     [activities],
   );
 
+  const deleteActivity = async (activityId: number) => {
+    const confirmed = window.confirm(
+      "Delete this activity? This will also remove its logged history.",
+    );
+
+    if (!confirmed) return;
+
+    setAlert(null);
+
+    try {
+      const response = await fetch(`/api/mastery/${activityId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete activity");
+      }
+
+      setActivities((prev) =>
+        prev.filter((activity) => activity.id !== activityId),
+      );
+      setQuickAdds((prev) => {
+        const next = { ...prev };
+        delete next[activityId];
+        return next;
+      });
+
+      setExpandedId((prev) => (prev === activityId ? null : prev));
+    } catch {
+      setAlert({
+        text: "Something went wrong while deleting the activity",
+        type: "error",
+      });
+    }
+  };
+
   return (
     <>
       <H1>Mastery Dashboard</H1>
@@ -260,6 +296,7 @@ const Mastery = () => {
               onQuickAddChange={setQuickAdd}
               onSubmitQuickAdd={submitQuickAdd}
               onAddHours={addHours}
+              onDelete={deleteActivity}
             />
           ))
         )}
