@@ -76,17 +76,16 @@ def calc_streak(history: list[HistoryEntry]) -> int:
     if not history:
         return 0
 
-    by_date = {entry.date.isoformat(): entry.hours for entry in history}
+    by_date = {entry.date: entry.hours for entry in history}
     streak = 0
     cursor = date.today()
 
-    while True:
-        key = cursor.isoformat()
-        if by_date.get(key, 0) > 0:
-            streak += 1
-            cursor -= timedelta(days=1)
-        else:
-            break
+    if by_date.get(cursor, 0) == 0:
+        cursor -= timedelta(days=1)
+
+    while cursor in by_date and by_date[cursor] > 0:
+        streak += 1
+        cursor -= timedelta(days=1)
 
     return streak
 
