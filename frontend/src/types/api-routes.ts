@@ -289,7 +289,8 @@ export interface paths {
         get: operations["get_mastery_activity_api_mastery__activity_id__get"];
         put?: never;
         post?: never;
-        delete?: never;
+        /** Delete Mastery Activity */
+        delete: operations["delete_mastery_activity_api_mastery__activity_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -405,6 +406,13 @@ export interface components {
         Body_upload_health_api_health__post: {
             /** File */
             file: string;
+        };
+        /** CalorieMetrics */
+        CalorieMetrics: {
+            /** Estimated Maintenance Calories */
+            estimated_maintenance_calories: number | null;
+            /** Avg Daily Calories */
+            avg_daily_calories: number | null;
         };
         /** CashFlowPoint */
         CashFlowPoint: {
@@ -561,30 +569,8 @@ export interface components {
         };
         /** MaintenanceEstimate */
         MaintenanceEstimate: {
-            /** Estimated Maintenance Calories */
-            estimated_maintenance_calories: number;
-            /** Kg Per Day */
-            kg_per_day: number;
-            /** Kg Per Week */
-            kg_per_week: number;
-            /** Kg Per Month */
-            kg_per_month: number;
-            /** Avg Daily Calories */
-            avg_daily_calories: number;
-            /** Pred Start Weight */
-            pred_start_weight: number;
-            /** Pred End Weight */
-            pred_end_weight: number;
-            /** Total Weight Change */
-            total_weight_change: number;
-            /** Days Used */
-            days_used: number;
-            /** Goal Weight */
-            goal_weight: number;
-            /** Progress Pct */
-            progress_pct: number | null;
-            /** Estimated Days To Goal */
-            estimated_days_to_goal: number | null;
+            weight_metrics: components["schemas"]["WeightTrendMetrics"] | null;
+            calorie_metrics: components["schemas"]["CalorieMetrics"] | null;
         };
         /** Milestone */
         Milestone: {
@@ -945,6 +931,29 @@ export interface components {
             ma30?: number | null;
             /** Ma90 */
             ma90?: number | null;
+        };
+        /** WeightTrendMetrics */
+        WeightTrendMetrics: {
+            /** Pred Start Weight */
+            pred_start_weight: number;
+            /** Pred End Weight */
+            pred_end_weight: number;
+            /** Total Weight Change */
+            total_weight_change: number;
+            /** Kg Per Day */
+            kg_per_day: number;
+            /** Kg Per Week */
+            kg_per_week: number;
+            /** Kg Per Month */
+            kg_per_month: number;
+            /** Days Used */
+            days_used: number;
+            /** Goal Weight */
+            goal_weight: number;
+            /** Progress Pct */
+            progress_pct: number | null;
+            /** Estimated Days To Goal */
+            estimated_days_to_goal: number | null;
         };
         /** WorkoutDaily */
         WorkoutDaily: {
@@ -1570,6 +1579,35 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ActivityResponse"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_mastery_activity_api_mastery__activity_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                activity_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

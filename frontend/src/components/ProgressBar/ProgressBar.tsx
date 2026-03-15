@@ -1,5 +1,10 @@
 import type { JSX } from "react";
-import { BarWrapper, BarFill, TickLabel } from "./ProgressBar.styled";
+import {
+  BarWrapper,
+  BarFill,
+  TickLabel,
+  Container,
+} from "./ProgressBar.styled";
 import { SubHeader } from "../Typography/Headings";
 
 type ProgressBarProps = {
@@ -33,21 +38,23 @@ const ProgressBar = ({
   return (
     <>
       {label && <SubHeader>{`${label} - ETA ${formattedDate}`}</SubHeader>}
-      <BarWrapper>
-        <BarFill progress={clampedProgress} />
-        <TickLabel left={0}>
-          <span className="tick" />
-          {start}kg
-        </TickLabel>
-        <TickLabel left={clampedProgress}>
-          <span className="tick" />
-          {current?.toFixed(1)}kg
-        </TickLabel>
-        <TickLabel left={100}>
-          <span className="tick" />
-          {goal}kg
-        </TickLabel>
-      </BarWrapper>
+      <Container>
+        <BarWrapper>
+          <BarFill progress={clampedProgress} />
+          <TickLabel left={0}>
+            <span className="tick" />
+            {start}
+          </TickLabel>
+          <TickLabel left={clampedProgress}>
+            <span className="tick" />
+            {current}
+          </TickLabel>
+          <TickLabel left={100}>
+            <span className="tick" />
+            {goal}
+          </TickLabel>
+        </BarWrapper>
+      </Container>
     </>
   );
 };

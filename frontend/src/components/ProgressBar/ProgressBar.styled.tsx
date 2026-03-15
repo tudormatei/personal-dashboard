@@ -1,5 +1,11 @@
 import styled from "@emotion/styled";
-import { colors, radii, typography } from "../../constants/styling";
+import { colors, radii, typography, spacing } from "../../constants/styling";
+
+export const Container = styled.div`
+  padding-right: ${spacing.lg};
+  padding-left: ${spacing.lg};
+  padding-bottom: ${spacing.xl};
+`;
 
 export const BarWrapper = styled.div`
   position: relative;

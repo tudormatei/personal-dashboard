@@ -82,6 +82,9 @@ const Weight = (): JSX.Element => {
     }
   };
 
+  const weightMetrics = maintenanceData?.weight_metrics;
+  const calorieMetrics = maintenanceData?.calorie_metrics;
+
   return (
     <>
       <H1>Weight Dashboard</H1>
@@ -184,49 +187,55 @@ const Weight = (): JSX.Element => {
         </FlexWrapper>
       )}
 
-      {maintenanceData && (
+      {weightMetrics && (
         <>
           <DashboardGrid>
             <Card
               title="Actual Start Weight (kg)"
-              value={maintenanceData.pred_start_weight}
+              value={weightMetrics.pred_start_weight}
             />
             <Card
               title="Actual End Weight (kg)"
-              value={maintenanceData.pred_end_weight}
+              value={weightMetrics.pred_end_weight}
             />
-
             <Card
               title="Total Weight Change (kg)"
-              value={maintenanceData.total_weight_change}
+              value={weightMetrics.total_weight_change}
             />
           </DashboardGrid>
+
           <DashboardGrid>
-            <Card
-              title="Maintenance Calories"
-              value={maintenanceData.estimated_maintenance_calories}
-            />
-            <Card
-              title="Avg Daily Calories"
-              value={maintenanceData.avg_daily_calories}
-            />
-            <Card title="Kg/Day" value={maintenanceData.kg_per_day} />
-            <Card title="Kg/Week" value={maintenanceData.kg_per_week} />
-            <Card title="Kg/Month" value={maintenanceData.kg_per_month} />
+            <Card title="Kg/Day" value={weightMetrics.kg_per_day} />
+            <Card title="Kg/Week" value={weightMetrics.kg_per_week} />
+            <Card title="Kg/Month" value={weightMetrics.kg_per_month} />
           </DashboardGrid>
-          {maintenanceData.goal_weight > maintenanceData.pred_start_weight && (
+
+          {weightMetrics.goal_weight > weightMetrics.pred_start_weight && (
             <FlexWrapper>
               <ProgressBar
                 label="Weight Progress"
-                start={maintenanceData.pred_start_weight}
-                progress={maintenanceData.progress_pct ?? 0}
-                current={maintenanceData.pred_end_weight}
-                goal={maintenanceData.goal_weight}
-                etaDays={maintenanceData.estimated_days_to_goal}
+                start={Number(weightMetrics.pred_start_weight?.toFixed(1))}
+                progress={Number(weightMetrics.progress_pct?.toFixed(1) ?? 0)}
+                current={Number(weightMetrics.pred_end_weight?.toFixed(1))}
+                goal={weightMetrics.goal_weight}
+                etaDays={weightMetrics.estimated_days_to_goal}
               />
             </FlexWrapper>
           )}
         </>
+      )}
+
+      {calorieMetrics && (
+        <DashboardGrid>
+          <Card
+            title="Maintenance Calories"
+            value={calorieMetrics.estimated_maintenance_calories}
+          />
+          <Card
+            title="Avg Daily Calories"
+            value={calorieMetrics.avg_daily_calories}
+          />
+        </DashboardGrid>
       )}
     </>
   );
