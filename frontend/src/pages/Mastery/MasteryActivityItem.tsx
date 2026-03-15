@@ -90,36 +90,29 @@ const MasteryActivityItem = ({
           </ActivityMeta>
         </div>
 
-        <StreakPill $active={activity.stats.streak_days > 0}>
-          🔥{" "}
-          {activity.stats.streak_days > 0
-            ? `${activity.stats.streak_days} day`
-            : "No streak yet"}
-        </StreakPill>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(activity.id);
-          }}
-          aria-label="Delete activity"
-          style={{
-            position: "absolute",
-            top: 12,
-            right: 12,
-            border: "none",
-            background: "transparent",
-            color: "white",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: 6,
-            borderRadius: 6,
-            opacity: 0.6,
-          }}
-        >
-          <FiX size={16} />
-        </button>
+        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+          {activity.stats.streak_days > 0 && (
+            <StreakPill $active>🔥 {activity.stats.streak_days} day</StreakPill>
+          )}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(activity.id);
+            }}
+            aria-label="Delete activity"
+            style={{
+              border: "none",
+              background: "transparent",
+              color: "white",
+              cursor: "pointer",
+              padding: 6,
+              borderRadius: 6,
+              opacity: 0.6,
+            }}
+          >
+            <FiX size={16} />
+          </button>
+        </div>
       </CardTop>
 
       {isExpanded && (
