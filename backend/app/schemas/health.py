@@ -15,19 +15,27 @@ class WeightResponse(BaseModel):
     ma90: Optional[float] = None
 
 
-class MaintenanceEstimate(BaseModel):
-    estimated_maintenance_calories: int
-    kg_per_day: float
-    kg_per_week: float
-    kg_per_month: float
-    avg_daily_calories: int
+class WeightTrendMetrics(BaseModel):
     pred_start_weight: float
     pred_end_weight: float
     total_weight_change: float
+    kg_per_day: float
+    kg_per_week: float
+    kg_per_month: float
     days_used: int
     goal_weight: int
     progress_pct: Optional[float]
     estimated_days_to_goal: Optional[int]
+
+
+class CalorieMetrics(BaseModel):
+    estimated_maintenance_calories: Optional[int]
+    avg_daily_calories: Optional[int]
+
+
+class MaintenanceEstimate(BaseModel):
+    weight_metrics: Optional[WeightTrendMetrics]
+    calorie_metrics: Optional[CalorieMetrics]
 
 
 class DailyNutrient(BaseModel):

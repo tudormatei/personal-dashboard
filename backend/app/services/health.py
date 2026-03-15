@@ -136,53 +136,34 @@ def estimate_maintenance(
         end_date=end_date,
     )
 
-    if not weight_records or not calorie_records:
+    if not weight_records:
         return None
 
     df_w = pd.DataFrame(weight_records)
-    df_c = pd.DataFrame(calorie_records)
-
     df_w["date"] = pd.to_datetime(df_w["date"]).dt.date
-    df_c["date"] = pd.to_datetime(df_c["date"]).dt.date
     df_w.rename(columns={"value": "weight"}, inplace=True)
-    df_c.rename(columns={"value": "calories"}, inplace=True)
 
     df_w_daily = df_w.groupby("date", as_index=False)["weight"].mean()
-    df_c_daily = df_c.groupby("date", as_index=False)["calories"].sum()
+    df_w_daily = df_w_daily.sort_values("date")
 
-    df = pd.merge(df_c_daily, df_w_daily, on="date", how="inner")
-
-    df = df[df["calories"] >= min_daily_calories]
-    df = df.sort_values("date")
-
-    if len(df) < 2:
+    if len(df_w_daily) < 2:
         return None
 
-    if calories_ma_window:
-        df["calories_ma"] = (
-            df["calories"]
-            .rolling(window=calories_ma_window, min_periods=1, center=True)
-            .mean()
-        )
-    else:
-        df["calories_ma"] = df["calories"]
-
-    df["day_num"] = pd.to_datetime(df["date"]).map(pd.Timestamp.toordinal)
-    X = df[["day_num"]]
-    y = df["weight"]
+    df_w_daily["day_num"] = pd.to_datetime(df_w_daily["date"]).map(
+        pd.Timestamp.toordinal
+    )
+    X = df_w_daily[["day_num"]]
+    y = df_w_daily["weight"]
 
     model = LinearRegression().fit(X, y)
     slope_kg_per_day = model.coef_[0]
-    daily_adjustment = slope_kg_per_day * KCALPERKG
 
-    pred_start = model.predict(pd.DataFrame({"day_num": [df["day_num"].iloc[0]]}))[0]
-    pred_end = model.predict(pd.DataFrame({"day_num": [df["day_num"].iloc[-1]]}))[0]
-
-    avg_daily_calories = df["calories_ma"].mean()
-    daily_exercise_calories = (LIFTING_SESSIONS_PER_WEEK * AVERAGE_LIFTING_CALORIES) / 7
-    maintenance_calories = (
-        avg_daily_calories + daily_exercise_calories - daily_adjustment
-    )
+    pred_start = model.predict(
+        pd.DataFrame({"day_num": [df_w_daily["day_num"].iloc[0]]})
+    )[0]
+    pred_end = model.predict(
+        pd.DataFrame({"day_num": [df_w_daily["day_num"].iloc[-1]]})
+    )[0]
 
     current_weight = pred_end
     progress_pct = ((current_weight - pred_start) / (GOAL_WEIGHT - pred_start)) * 100
@@ -194,20 +175,63 @@ def estimate_maintenance(
     else:
         eta_days = None
 
-    return {
-        "estimated_maintenance_calories": round(maintenance_calories),
-        "kg_per_day": round(slope_kg_per_day, 2),
-        "kg_per_week": round(slope_kg_per_day * 7, 2),
-        "kg_per_month": round(slope_kg_per_day * AVERAGE_DAYS_PER_MONTH, 2),
-        "avg_daily_calories": round(avg_daily_calories),
-        "pred_start_weight": round(pred_start, 2),
-        "pred_end_weight": round(pred_end, 2),
-        "total_weight_change": round(pred_end - pred_start, 2),
-        "days_used": len(df),
-        "goal_weight": GOAL_WEIGHT,
-        "progress_pct": round(progress_pct, 1),
-        "estimated_days_to_goal": eta_days,
+    result = {
+        "weight_metrics": {
+            "pred_start_weight": round(pred_start, 2),
+            "pred_end_weight": round(pred_end, 2),
+            "total_weight_change": round(pred_end - pred_start, 2),
+            "kg_per_day": round(slope_kg_per_day, 3),
+            "kg_per_week": round(slope_kg_per_day * 7, 3),
+            "kg_per_month": round(slope_kg_per_day * AVERAGE_DAYS_PER_MONTH, 3),
+            "days_used": len(df_w_daily),
+            "goal_weight": GOAL_WEIGHT,
+            "progress_pct": round(progress_pct, 1),
+            "estimated_days_to_goal": eta_days,
+        },
+        "calorie_metrics": None,
     }
+
+    if not calorie_records:
+        return result
+
+    df_c = pd.DataFrame(calorie_records)
+    df_c["date"] = pd.to_datetime(df_c["date"]).dt.date
+    df_c.rename(columns={"value": "calories"}, inplace=True)
+
+    df_c_daily = df_c.groupby("date", as_index=False)["calories"].sum()
+
+    df = pd.merge(
+        df_c_daily, df_w_daily[["date", "weight", "day_num"]], on="date", how="inner"
+    )
+    df = df[df["calories"] >= min_daily_calories]
+    df = df.sort_values("date")
+
+    if len(df) < 2:
+        return result
+
+    if calories_ma_window:
+        df["calories_ma"] = (
+            df["calories"]
+            .rolling(window=calories_ma_window, min_periods=1, center=True)
+            .mean()
+        )
+    else:
+        df["calories_ma"] = df["calories"]
+
+    avg_daily_calories = df["calories_ma"].mean()
+    daily_adjustment = slope_kg_per_day * KCALPERKG
+    daily_exercise_calories = (LIFTING_SESSIONS_PER_WEEK * AVERAGE_LIFTING_CALORIES) / 7
+
+    maintenance_calories = (
+        avg_daily_calories + daily_exercise_calories - daily_adjustment
+    )
+
+    result["calorie_metrics"] = {
+        "estimated_maintenance_calories": round(maintenance_calories),
+        "avg_daily_calories": round(avg_daily_calories),
+    }
+
+    return result
 
 
 def get_macros_stats(
